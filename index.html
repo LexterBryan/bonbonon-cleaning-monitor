@@ -1,1526 +1,1228 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bonbonon High School - Cleaning Assignment Monitoring System</title>
-  
-  <!-- Tailwind CSS CDN -->
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- FontAwesome 6 Icons CDN -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  
-  <!-- Chart.js for graphical analytics -->
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <!-- Google Fonts: Inter -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-          },
-          colors: {
-            brand: {
-              50: '#eff6ff',
-              100: '#dbeafe',
-              200: '#bfdbfe',
-              300: '#93c5fd',
-              400: '#60a5fa',
-              500: '#3b82f6',
-              600: '#2563eb',
-              700: '#1d4ed8',
-              800: '#1e40af',
-              900: '#1e3a8a',
-              950: '#0f172a',
-            }
-          },
-          boxShadow: {
-            'glow-blue': '0 0 25px -5px rgba(37, 99, 235, 0.25)',
-            'card-soft': '0 4px 20px -2px rgba(15, 23, 42, 0.06)',
-          }
-        }
-      }
-    }
-  </script>
-
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* Custom scrollbars */
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #f1f5f9;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #93c5fd;
-      border-radius: 9999px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #2563eb;
-    }
-    
-    .glass-nav {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-    }
-
-    .podium-card-1 {
-      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 50%, #e0f2fe 100%);
-    }
-    .podium-card-2 {
-      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
-    }
-    .podium-card-3 {
-      background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 50%, #f1f5f9 100%);
-    }
-
-    .star-widget-interactive {
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .star-widget-interactive:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.2);
-    }
-
-    .no-scrollbar::-webkit-scrollbar {
-      display: none;
-    }
-    .no-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    body { font-family: 'Inter', sans-serif; background-color: #f0f9ff; color: #0f172a; }
+    .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); border: 1px solid #e0f2fe; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f0f9ff; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #93c5fd; border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
   </style>
 </head>
+<body class="min-h-screen flex flex-col custom-scrollbar">
 
-<body class="bg-slate-50/90 text-slate-800 font-sans min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
-
-  <!-- Admin Mode Header Notification Banner -->
-  <div id="adminBanner" class="hidden bg-amber-500 text-slate-950 font-medium text-xs sm:text-sm px-4 py-2 shadow-md transition-all">
-    <div class="max-w-7xl mx-auto flex items-center justify-between">
-      <div class="flex items-center space-x-2">
-        <i class="fa-solid fa-shield-halved text-slate-950 text-base"></i>
-        <span><strong>Admin Privileges Unlocked:</strong> You can create, edit, and update cleanliness evaluations.</span>
-      </div>
-      <div class="flex items-center space-x-2">
-        <button onclick="openChangePinModal()" class="bg-blue-900 hover:bg-blue-950 text-white font-bold text-xs px-3 py-1 rounded-lg shadow transition flex items-center gap-1">
-          <i class="fa-solid fa-key"></i>
-          <span>Change PIN</span>
-        </button>
-        <button onclick="lockAdminMode()" class="bg-slate-950 hover:bg-slate-900 text-amber-400 font-bold text-xs px-3 py-1 rounded-lg shadow transition flex items-center gap-1">
-          <i class="fa-solid fa-lock"></i>
-          <span>Lock Admin</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Main Header with Deep Navy Gradient -->
-  <header class="bg-gradient-to-r from-blue-950 via-slate-900 to-blue-900 text-white shadow-xl relative overflow-hidden border-b border-blue-900/50">
-    <div class="absolute -top-24 -right-24 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl pointer-events-none"></div>
-    <div class="absolute top-1/2 -left-24 w-72 h-72 bg-sky-400/15 rounded-full blur-3xl pointer-events-none"></div>
-
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
-        
-        <!-- School Identity -->
-        <div class="flex items-center space-x-4">
-          <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 via-sky-400 to-blue-300 p-0.5 shadow-glow-blue flex-shrink-0">
-            <div class="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center text-sky-400 text-2xl">
-              <i class="fa-solid fa-broom-ball"></i>
-            </div>
+  <!-- Top Navigation Header -->
+  <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col md:flex-row items-center justify-between gap-3">
+      <div class="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-start">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center font-extrabold text-white text-lg shadow-lg">
+            <i class="fa-solid fa-broom text-xl"></i>
           </div>
           <div>
-            <div class="flex items-center space-x-2">
-              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-blue-500/20 text-blue-300 border border-blue-400/30">Official Portal</span>
-              <span id="liveDateWidget" class="text-xs text-sky-200 font-medium">Loading date...</span>
-            </div>
-            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white mt-0.5">
-              Bonbonon High School
-            </h1>
-            <p class="text-xs sm:text-sm text-blue-200/90 font-medium flex items-center gap-1.5 mt-0.5">
-              <i class="fa-solid fa-sparkles text-sky-300"></i>
-              Cleaning Assignment Monitoring System
-            </p>
+            <h1 class="font-bold text-lg leading-tight text-blue-100">Bonbonon High School</h1>
+            <p class="text-xs text-blue-300 font-medium">Cleaning Assignment Monitoring System</p>
           </div>
         </div>
-
-        <!-- Role Badge & Admin Controls -->
-        <div class="flex items-center space-x-2.5 self-start md:self-auto">
-          <div id="roleBadge" class="bg-slate-900/80 border border-blue-800/60 rounded-xl px-3.5 py-2 flex items-center space-x-2 shadow-inner">
-            <span class="w-2.5 h-2.5 rounded-full bg-slate-400" id="roleDot"></span>
-            <span id="roleText" class="text-xs font-semibold text-slate-300">Teacher View Only</span>
-          </div>
-
-          <button id="adminHeaderPinBtn" onclick="openChangePinModal()" class="hidden bg-slate-800 hover:bg-slate-700 text-sky-300 border border-blue-700/60 font-semibold text-xs sm:text-sm px-3.5 py-2.5 rounded-xl transition-all flex items-center space-x-1.5">
-            <i class="fa-solid fa-key"></i>
-            <span>Change PIN</span>
-          </button>
-
-          <button id="adminAuthBtn" onclick="openAdminModal()" class="bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-500 hover:to-sky-400 text-white font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-lg shadow-blue-600/30 transition-all flex items-center space-x-2 active:scale-95">
-            <i class="fa-solid fa-lock text-xs" id="adminAuthIcon"></i>
-            <span id="adminBtnLabel">Admin Unlock</span>
-          </button>
+        <!-- Mobile Admin Status Badge -->
+        <div class="md:hidden flex items-center gap-2">
+          <span id="adminBadgeMobile" class="text-xs px-2.5 py-1 rounded-full font-semibold bg-slate-800 text-slate-400 border border-slate-700">
+            Viewer
+          </span>
         </div>
+      </div>
 
+      <!-- Navigation Tabs -->
+      <nav class="flex items-center space-x-1 bg-slate-800 p-1.5 rounded-xl border border-slate-700 overflow-x-auto w-full md:w-auto justify-center">
+        <button onclick="switchTab('leaderboard')" id="tabBtn-leaderboard" class="tab-btn px-3.5 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 bg-blue-600 text-white shadow-sm">
+          <i class="fa-solid fa-trophy"></i>
+          <span>Leaderboard</span>
+        </button>
+        <button onclick="switchTab('logs')" id="tabBtn-logs" class="tab-btn px-3.5 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white transition-all flex items-center gap-2">
+          <i class="fa-solid fa-clipboard-check"></i>
+          <span>AM/PM Logs</span>
+        </button>
+        <button onclick="switchTab('sections')" id="tabBtn-sections" class="tab-btn px-3.5 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white transition-all flex items-center gap-2">
+          <i class="fa-solid fa-map-location-dot"></i>
+          <span>Sections & Zones</span>
+        </button>
+      </nav>
+
+      <!-- Admin Status & PIN Controls -->
+      <div class="hidden md:flex items-center space-x-3">
+        <span id="adminBadgeDesktop" class="text-xs px-3 py-1.5 rounded-full font-semibold bg-slate-800 text-slate-400 border border-slate-700 flex items-center gap-1.5">
+          <i class="fa-solid fa-user-lock"></i> Viewer Mode
+        </span>
+        <button id="adminActionBtn" onclick="toggleAdminState()" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold transition flex items-center gap-1.5 shadow">
+          <i class="fa-solid fa-key"></i>
+          <span>Admin Unlock</span>
+        </button>
+        <button id="changePinHeaderBtn" onclick="openChangePinModal()" class="hidden px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-blue-300 rounded-lg text-xs font-semibold border border-slate-700 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>Change PIN</span>
+        </button>
       </div>
     </div>
   </header>
 
-  <!-- Navigation Bar -->
-  <div class="sticky top-0 z-40 bg-slate-50/90 backdrop-blur-md border-b border-blue-100/80 shadow-sm py-3">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <nav class="glass-nav bg-white/90 border border-blue-100 p-1.5 rounded-2xl shadow-sm flex items-center space-x-1.5 overflow-x-auto no-scrollbar">
-        
-        <button onclick="switchTab('analytics')" id="tabBtn-analytics" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center space-x-2 transition-all text-slate-600 hover:text-blue-700 hover:bg-blue-50/80 whitespace-nowrap">
-          <i class="fa-solid fa-trophy text-amber-500"></i>
-          <span>Leaderboard & Analytics</span>
-        </button>
-
-        <button onclick="switchTab('logs')" id="tabBtn-logs" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center space-x-2 transition-all text-slate-600 hover:text-blue-700 hover:bg-blue-50/80 whitespace-nowrap">
-          <i class="fa-solid fa-clipboard-check text-blue-600"></i>
-          <span>Daily AM/PM Logs</span>
-        </button>
-
-        <button onclick="switchTab('attention')" id="tabBtn-attention" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center space-x-2 transition-all text-slate-600 hover:text-blue-700 hover:bg-blue-50/80 whitespace-nowrap relative">
-          <i class="fa-solid fa-triangle-exclamation text-rose-500"></i>
-          <span>Needs Attention</span>
-          <span id="attentionCountBadge" class="ml-1 px-2 py-0.5 rounded-full bg-rose-600 text-white text-[10px] font-extrabold shadow-sm">0</span>
-        </button>
-
-        <button onclick="switchTab('sections')" id="tabBtn-sections" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center space-x-2 transition-all text-slate-600 hover:text-blue-700 hover:bg-blue-50/80 whitespace-nowrap">
-          <i class="fa-solid fa-map-location-dot text-indigo-600"></i>
-          <span>Sections & Cleaning Areas</span>
-        </button>
-
-      </nav>
+  <!-- Notification Toast Banner -->
+  <div id="toast" class="fixed top-16 right-4 z-50 transform transition-all duration-300 translate-y-[-100px] opacity-0 pointer-events-none">
+    <div id="toastContent" class="px-4 py-3 rounded-xl shadow-xl text-white text-xs font-semibold flex items-center gap-2 bg-slate-900 border border-slate-700">
+      <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
+      <span id="toastMsg">Action completed successfully</span>
     </div>
   </div>
 
-  <!-- Main Content Container -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full">
 
-    <!-- TAB 1: LEADERBOARD & ANALYTICS -->
-    <section id="tab-analytics" class="tab-content space-y-8">
+    <!-- ==================== TAB 1: LEADERBOARD & ANALYTICS ==================== -->
+    <section id="tab-leaderboard" class="tab-content space-y-6">
       
-      <!-- Timeframe Filter Strip -->
-      <div class="bg-white rounded-2xl border border-blue-100 p-4 sm:p-5 shadow-card-soft flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <!-- Timeframe Filter Header -->
+      <div class="glass-card p-4 rounded-2xl shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
         <div>
-          <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+          <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
             <i class="fa-solid fa-chart-line text-blue-600"></i>
-            Cleanliness Performance Leaderboard
+            Campus Sanitation Leaderboard
           </h2>
-          <p class="text-xs text-slate-500 mt-0.5">Filter ratings based on inspection timeframe</p>
+          <p class="text-xs text-slate-500 font-medium">Real-time inspection rankings across all 15 class sections</p>
         </div>
 
-        <div class="inline-flex p-1 bg-slate-100/80 rounded-xl border border-slate-200/80 overflow-x-auto self-start md:self-auto">
-          <button onclick="setTimeframe('daily')" id="tf-daily" class="tf-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 transition-all">Daily</button>
-          <button onclick="setTimeframe('weekly')" id="tf-weekly" class="tf-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 transition-all">Weekly</button>
-          <button onclick="setTimeframe('monthly')" id="tf-monthly" class="tf-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 transition-all">Monthly</button>
-          <button onclick="setTimeframe('yearly')" id="tf-yearly" class="tf-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 transition-all">Yearly</button>
-          <button onclick="setTimeframe('overall')" id="tf-overall" class="tf-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 transition-all">Overall</button>
+        <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-semibold overflow-x-auto w-full md:w-auto">
+          <button onclick="setFilter('daily')" id="filter-daily" class="filter-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-blue-600 transition">Daily</button>
+          <button onclick="setFilter('weekly')" id="filter-weekly" class="filter-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-blue-600 transition">Weekly</button>
+          <button onclick="setFilter('monthly')" id="filter-monthly" class="filter-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-blue-600 transition">Monthly</button>
+          <button onclick="setFilter('yearly')" id="filter-yearly" class="filter-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-blue-600 transition">Yearly</button>
+          <button onclick="setFilter('overall')" id="filter-overall" class="filter-btn px-3 py-1.5 rounded-lg bg-blue-600 text-white shadow-sm">Overall</button>
         </div>
-      </div>
-
-      <!-- Timeframe Active Banner -->
-      <div class="bg-gradient-to-r from-blue-50 to-sky-50 border border-blue-200/80 rounded-xl px-4 py-3 flex items-center justify-between text-xs text-blue-900 font-medium">
-        <div class="flex items-center space-x-2">
-          <i class="fa-solid fa-circle-info text-blue-600"></i>
-          <span>Displaying evaluations for: <strong id="timeframeLabel" class="text-blue-950 font-extrabold uppercase">Overall Period</strong></span>
-        </div>
-        <span id="evaluatedCountText" class="text-blue-700 bg-white/80 border border-blue-200/80 px-2.5 py-1 rounded-lg text-[11px] font-bold">0 Inspections Evaluated</span>
       </div>
 
       <!-- Top 3 Podium Cards -->
-      <div id="podiumContainer" class="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <!-- Rendered via JS -->
+      <div id="podiumContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Rendered dynamically -->
       </div>
 
-      <!-- SECTIONS NEEDING PRIORITY ATTENTION CONTAINER (POSITIONED DIRECTLY UNDER PODIUM) -->
-      <div class="bg-gradient-to-r from-rose-50/90 via-amber-50/70 to-blue-50/90 border border-rose-200/90 rounded-2xl p-5 sm:p-6 shadow-card-soft space-y-5">
-        <div class="flex items-start justify-between border-b border-rose-200/60 pb-3">
-          <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center text-lg shadow-md shadow-rose-600/20 flex-shrink-0">
+      <!-- EMBEDDED: Sections Needing Priority Attention (Directly Under Podium) -->
+      <div class="glass-card p-5 rounded-2xl shadow-sm border border-amber-200/60 bg-gradient-to-br from-amber-50/40 to-white">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-amber-500 text-white flex items-center justify-center font-bold shadow-sm">
               <i class="fa-solid fa-triangle-exclamation"></i>
             </div>
             <div>
-              <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
-                Sections Needing Priority Attention
-              </h3>
-              <p class="text-xs text-slate-600 mt-0.5">
-                Low rating inspections (&le; 2.5 Stars). <span class="font-bold text-rose-700">Click the interactive star box</span> to directly edit ratings.
-              </p>
+              <h3 class="text-base font-bold text-slate-900">Sections Needing Priority Attention</h3>
+              <p class="text-xs text-slate-500">Flagged inspections receiving low ratings (&le; 2.5 stars)</p>
             </div>
           </div>
-          <span id="prioritySectionCountBadge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-600 text-white shadow-sm">
+          <span id="attentionCounterBadge" class="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
             0 Flagged
           </span>
         </div>
 
-        <!-- Dynamic Grid of Flagged Inspection Cards -->
-        <div id="podiumPriorityAttentionGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <!-- Rendered via JS -->
+        <div id="priorityAttentionGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Dynamically populated with flagged cards -->
         </div>
       </div>
 
-      <!-- Chart.js Graphical Comparison Bar Chart Section -->
-      <div class="bg-white rounded-2xl border border-blue-100 p-5 sm:p-6 shadow-card-soft space-y-4">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+      <!-- Chart & Details Table Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Chart.js Visualization -->
+        <div class="glass-card p-5 rounded-2xl shadow-sm lg:col-span-1 flex flex-col justify-between">
           <div>
-            <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
-              <i class="fa-solid fa-chart-simple text-blue-600"></i>
-              Section Cleanliness Ratings Comparison Bar Chart
+            <h3 class="font-bold text-sm text-slate-900 mb-1 flex items-center justify-between">
+              <span>Section Performance Comparison</span>
+              <i class="fa-solid fa-chart-bar text-blue-500"></i>
             </h3>
-            <p class="text-xs text-slate-500">Average score per section on a 1.0 to 5.0 Star scale</p>
+            <p class="text-xs text-slate-500 mb-4">Average rating benchmark chart</p>
           </div>
-          <span class="text-xs font-semibold px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-100 rounded-lg">15 Sections Total</span>
+          <div class="relative w-full h-64 flex items-center justify-center">
+            <canvas id="leaderboardChart"></canvas>
+            <div id="chartFallback" class="hidden w-full h-full flex-col justify-end space-y-2 pt-4">
+              <!-- Fallback HTML Bars if Chart CDN fails -->
+            </div>
+          </div>
         </div>
 
-        <div id="chartWrapper" class="relative w-full min-h-[420px] pt-2">
-          <canvas id="leaderboardChart"></canvas>
-          <div id="htmlFallbackChart" class="hidden space-y-2.5 pt-2">
-            <!-- HTML Bar Chart Fallback -->
+        <!-- Comprehensive Rankings Directory Table -->
+        <div class="glass-card p-5 rounded-2xl shadow-sm lg:col-span-2 overflow-hidden flex flex-col">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="font-bold text-sm text-slate-900">Full Section Rankings</h3>
+              <p class="text-xs text-slate-500">Sorted by average sanitation rating</p>
+            </div>
+            <div class="text-xs text-slate-400 font-medium">
+              <i class="fa-solid fa-info-circle mr-1"></i> Ties share same rank
+            </div>
+          </div>
+
+          <div class="overflow-x-auto custom-scrollbar flex-grow">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-100/80 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200">
+                <tr>
+                  <th class="py-3 px-3">Rank</th>
+                  <th class="py-3 px-3">Section</th>
+                  <th class="py-3 px-3">Official Cleaning Zone</th>
+                  <th class="py-3 px-3 text-center">Inspections</th>
+                  <th class="py-3 px-3 text-center">Avg Rating</th>
+                  <th class="py-3 px-3 text-right">Status</th>
+                </tr>
+              </thead>
+              <tbody id="rankingsTableBody" class="divide-y divide-slate-100">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
+    </section>
 
-      <!-- Detailed Rankings Directory Table -->
-      <div class="bg-white rounded-2xl border border-blue-100 overflow-hidden shadow-card-soft">
-        <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-          <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
-            <i class="fa-solid fa-list-ol text-blue-600"></i>
-            Detailed Competition Rankings Directory
-          </h3>
-          <span class="text-xs text-slate-500 font-medium">Automatic tie handling (#1, #1, #3)</span>
+    <!-- ==================== TAB 2: AM/PM INSPECTION LOGS ==================== -->
+    <section id="tab-logs" class="tab-content hidden space-y-6">
+      <div class="glass-card p-5 rounded-2xl shadow-sm">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <i class="fa-solid fa-clipboard-list text-blue-600"></i>
+              Daily AM & PM Inspection Logs
+            </h2>
+            <p class="text-xs text-slate-500">Record and inspect daily morning and afternoon section cleanliness scores</p>
+          </div>
+
+          <button onclick="openNewLogModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow transition flex items-center gap-2">
+            <i class="fa-solid fa-plus"></i>
+            <span>Log Inspection Score</span>
+          </button>
         </div>
 
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs sm:text-sm">
-            <thead class="bg-slate-100/80 text-slate-700 font-bold uppercase text-[11px] tracking-wider border-b border-slate-200">
+        <!-- Filters Bar -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200 mb-4">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Filter Date</label>
+            <input type="date" id="logDateFilter" onchange="renderLogs()" class="w-full text-xs px-3 py-1.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Filter Session</label>
+            <select id="logSessionFilter" onchange="renderLogs()" class="w-full text-xs px-3 py-1.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="ALL">All Sessions (AM & PM)</option>
+              <option value="AM">AM Inspection Only</option>
+              <option value="PM">PM Inspection Only</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Filter Section</label>
+            <select id="logSectionFilter" onchange="renderLogs()" class="w-full text-xs px-3 py-1.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="ALL">All 15 Sections</option>
+              <!-- Options populated dynamically -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Logs Table -->
+        <div class="overflow-x-auto custom-scrollbar">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200">
               <tr>
-                <th class="py-3.5 px-4 text-center w-16">Rank</th>
-                <th class="py-3.5 px-4">Section Name</th>
-                <th class="py-3.5 px-4 text-center">Avg Rating</th>
-                <th class="py-3.5 px-4 text-center">Evaluations</th>
-                <th class="py-3.5 px-4 text-center">Status</th>
-                <th class="py-3.5 px-4">Assigned Cleaning Zone Description</th>
+                <th class="py-3 px-3">Date</th>
+                <th class="py-3 px-3">Session</th>
+                <th class="py-3 px-3">Section</th>
+                <th class="py-3 px-3">Assigned Zone</th>
+                <th class="py-3 px-3 text-center">Star Score</th>
+                <th class="py-3 px-3">Remarks / Notes</th>
+                <th class="py-3 px-3 text-right">Action</th>
               </tr>
             </thead>
-            <tbody id="leaderboardTableBody" class="divide-y divide-slate-100">
-              <!-- Rendered via JS -->
+            <tbody id="logsTableBody" class="divide-y divide-slate-100">
+              <!-- Rendered dynamically -->
             </tbody>
           </table>
         </div>
       </div>
-
     </section>
 
-    <!-- TAB 2: DAILY AM/PM LOGS -->
-    <section id="tab-logs" class="tab-content hidden space-y-6">
-      
-      <!-- Control Toolbar -->
-      <div class="bg-white rounded-2xl border border-blue-100 p-5 shadow-card-soft space-y-4">
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          
-          <div>
-            <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
-              <i class="fa-solid fa-calendar-day text-blue-600"></i>
-              Daily Inspection Entry Logs
-            </h2>
-            <p class="text-xs text-slate-500">Record score evaluations and notes for AM or PM sessions</p>
-          </div>
-
-          <div class="flex flex-wrap items-center gap-3">
-            
-            <!-- Date Picker -->
-            <div class="flex items-center space-x-2 bg-slate-100/90 border border-slate-200 rounded-xl px-3 py-1.5 text-xs">
-              <i class="fa-regular fa-calendar text-blue-600"></i>
-              <input type="date" id="logDatePicker" onchange="renderDailyLogs()" class="bg-transparent text-slate-800 font-bold focus:outline-none cursor-pointer">
-            </div>
-
-            <!-- Session Toggle Pills -->
-            <div class="inline-flex bg-slate-100 p-1 rounded-xl border border-slate-200">
-              <button onclick="setSessionFilter('AM')" id="sessionBtn-AM" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all">AM Inspection</button>
-              <button onclick="setSessionFilter('PM')" id="sessionBtn-PM" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all">PM Inspection</button>
-            </div>
-
-            <!-- Live Search Bar -->
-            <div class="relative min-w-[200px]">
-              <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
-              <input type="text" id="sectionSearchInput" onkeyup="renderDailyLogs()" placeholder="Search Section / Zone..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-3 py-1.5 text-xs focus:ring-2 focus:ring-blue-600 focus:outline-none">
-            </div>
-
-          </div>
-
-        </div>
-      </div>
-
-      <!-- Logs Grid -->
-      <div id="dailyLogsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        <!-- Rendered via JS -->
-      </div>
-
-    </section>
-
-    <!-- TAB 3: SECTIONS NEEDING ATTENTION -->
-    <section id="tab-attention" class="tab-content hidden space-y-6">
-      
-      <div class="bg-gradient-to-r from-rose-50 via-amber-50 to-blue-50 border border-rose-200 rounded-2xl p-5 shadow-card-soft">
-        <div class="flex items-start space-x-3.5">
-          <div class="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center text-lg flex-shrink-0 shadow-md shadow-rose-600/20">
-            <i class="fa-solid fa-triangle-exclamation"></i>
-          </div>
-          <div>
-            <h2 class="text-base font-extrabold text-slate-900">Priority Cleaning Remediation Directory</h2>
-            <p class="text-xs text-slate-600 mt-0.5">
-              Comprehensive list of all evaluations receiving a rating equal to or lower than <strong>2.5 Stars</strong>. Click the star rating widget to directly open rating controls.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div id="attentionLogsContainer" class="space-y-4">
-        <!-- Rendered via JS -->
-      </div>
-
-    </section>
-
-    <!-- TAB 4: SECTIONS & CLEANING AREAS DIRECTORY -->
+    <!-- ==================== TAB 3: SECTIONS & CLEANING ZONES DIRECTORY ==================== -->
     <section id="tab-sections" class="tab-content hidden space-y-6">
-      
-      <div class="bg-white rounded-2xl border border-blue-100 p-5 shadow-card-soft flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
-            <i class="fa-solid fa-map-location-dot text-blue-600"></i>
-            Master Cleaning Zone Allocations
-          </h2>
-          <p class="text-xs text-slate-500">Official permanent assigned cleaning areas for all 15 sections of Bonbonon High School</p>
+      <div class="glass-card p-5 rounded-2xl shadow-sm">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <i class="fa-solid fa-school text-blue-600"></i>
+              Sections & Permanent Cleaning Zones
+            </h2>
+            <p class="text-xs text-slate-500">Master directory of Bonbonon High School class sections (Grades 7–12) and official assigned cleaning areas.</p>
+          </div>
+          <div class="text-xs px-3 py-1.5 rounded-xl bg-blue-50 text-blue-700 border border-blue-200 font-semibold">
+            <i class="fa-solid fa-shield-halved mr-1"></i> Admin can edit official assigned zones anytime
+          </div>
         </div>
-        <span class="text-xs font-bold px-3 py-1.5 bg-blue-50 text-blue-700 rounded-xl border border-blue-200/80 self-start sm:self-auto">
-          15 Official Sections
-        </span>
-      </div>
 
-      <div id="directoryGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        <!-- Rendered via JS -->
+        <!-- 15 Sections Grid -->
+        <div id="sectionsMasterGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Populated dynamically with official zone edit buttons -->
+        </div>
       </div>
-
     </section>
 
   </main>
 
-  <!-- MODALS -->
+  <!-- Footer -->
+  <footer class="bg-slate-900 text-slate-400 text-xs py-4 mt-auto border-t border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 text-center">
+      <p class="font-medium">Bonbonon High School &copy; Campus Sanitation & Cleaning Monitoring System</p>
+      <p class="text-[11px] text-slate-500 mt-0.5">Designed for Teachers & Faculty Administrators</p>
+    </div>
+  </footer>
 
-  <!-- 1. Admin PIN Unlock Modal -->
-  <div id="adminPinModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-blue-100 space-y-5">
-      <div class="text-center space-y-2">
-        <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl mx-auto flex items-center justify-center text-xl shadow-inner">
-          <i class="fa-solid fa-user-shield"></i>
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- MODAL 1: Admin PIN Unlock Modal -->
+  <div id="adminModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 border border-slate-100">
+      <div class="text-center mb-5">
+        <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-2 text-xl shadow-inner">
+          <i class="fa-solid fa-lock"></i>
         </div>
-        <h3 class="text-lg font-bold text-slate-900">Admin Security Authentication</h3>
-        <p class="text-xs text-slate-500">Enter Admin PIN to unlock inspection entry and editing privileges.</p>
+        <h3 class="font-bold text-base text-slate-900">Enter Admin PIN</h3>
+        <p class="text-xs text-slate-500">Authenticate to edit ratings or change official cleaning zones</p>
       </div>
 
-      <div>
-        <label class="block text-xs font-bold text-slate-700 mb-1">Enter Admin PIN</label>
-        <input type="password" id="adminPinInput" placeholder="••••" class="w-full text-center text-lg font-mono tracking-widest bg-slate-50 border border-slate-300 rounded-xl py-2.5 focus:ring-2 focus:ring-blue-600 focus:outline-none">
-        
-        <div class="text-center mt-2">
-          <button type="button" onclick="openChangePinModalFromLogin()" class="text-xs font-bold text-blue-600 hover:text-blue-800 underline">
-            <i class="fa-solid fa-key mr-1"></i>Change PIN?
+      <div class="space-y-4">
+        <div>
+          <input type="password" id="adminPinInput" maxlength="6" placeholder="Enter PIN (Default: 1234)" class="w-full text-center text-lg tracking-widest font-bold py-2.5 px-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <p id="pinErrorMsg" class="text-[11px] text-red-500 text-center font-semibold mt-1 hidden">Incorrect PIN. Try default '1234'.</p>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button onclick="closeAdminModal()" class="w-1/2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition">Cancel</button>
+          <button onclick="verifyAdminPin()" class="w-1/2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow">Unlock</button>
+        </div>
+
+        <div class="text-center pt-2 border-t border-slate-100">
+          <button onclick="switchModalToChangePin()" class="text-xs font-semibold text-blue-600 hover:underline">
+            <i class="fa-solid fa-key mr-1"></i> Change Admin PIN?
           </button>
         </div>
       </div>
+    </div>
+  </div>
 
-      <div class="flex space-x-3 pt-1">
-        <button onclick="closeAdminModal()" class="w-1/2 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-semibold text-xs hover:bg-slate-50 transition">Cancel</button>
-        <button onclick="verifyAdminPin()" class="w-1/2 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-600/30 transition">Unlock Admin</button>
+  <!-- MODAL 2: Change PIN Modal -->
+  <div id="changePinModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 border border-slate-100">
+      <div class="text-center mb-5">
+        <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-2 text-xl shadow-inner">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <h3 class="font-bold text-base text-slate-900">Change Admin PIN</h3>
+        <p class="text-xs text-slate-500">Update security PIN stored on this device</p>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 mb-1">Current PIN</label>
+          <input type="password" id="currPinInput" placeholder="Current PIN" class="w-full text-xs py-2 px-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 mb-1">New PIN</label>
+          <input type="password" id="newPinInput" maxlength="6" placeholder="New PIN (min 4 digits)" class="w-full text-xs py-2 px-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 mb-1">Confirm New PIN</label>
+          <input type="password" id="confirmPinInput" maxlength="6" placeholder="Confirm new PIN" class="w-full text-xs py-2 px-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+
+        <p id="changePinError" class="text-[11px] text-red-500 font-semibold text-center hidden"></p>
+
+        <div class="flex items-center gap-2 pt-2">
+          <button onclick="closeChangePinModal()" class="w-1/2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition">Cancel</button>
+          <button onclick="saveNewPin()" class="w-1/2 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition shadow">Save PIN</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- 2. Dedicated Change Admin PIN Modal -->
-  <div id="changePinModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-blue-100 space-y-4">
-      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-        <div class="flex items-center space-x-2">
-          <div class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
-            <i class="fa-solid fa-key"></i>
-          </div>
-          <h3 class="text-base font-bold text-slate-900">Change Admin PIN</h3>
+  <!-- MODAL 3: Rating Evaluation / Inspection Modal -->
+  <div id="ratingModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border border-slate-100">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+        <div>
+          <h3 class="font-bold text-base text-slate-900" id="ratingModalTitle">Log Section Inspection</h3>
+          <p class="text-xs text-slate-500" id="ratingModalSub">Rate section sanitation score</p>
         </div>
-        <button onclick="closeChangePinModal()" class="text-slate-400 hover:text-slate-600">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
+        <button onclick="closeRatingModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
 
-      <form onsubmit="saveNewAdminPin(event)" class="space-y-3">
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Current PIN</label>
-          <input type="password" id="currentPinInput" required placeholder="Enter current PIN" class="w-full text-center text-sm font-mono bg-slate-50 border border-slate-200 rounded-xl py-2 focus:ring-2 focus:ring-blue-600 focus:outline-none">
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">New PIN</label>
-          <input type="password" id="newPinInput" required placeholder="Enter new PIN" class="w-full text-center text-sm font-mono bg-slate-50 border border-slate-200 rounded-xl py-2 focus:ring-2 focus:ring-blue-600 focus:outline-none">
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Confirm New PIN</label>
-          <input type="password" id="confirmNewPinInput" required placeholder="Confirm new PIN" class="w-full text-center text-sm font-mono bg-slate-50 border border-slate-200 rounded-xl py-2 focus:ring-2 focus:ring-blue-600 focus:outline-none">
-        </div>
-
-        <div class="flex space-x-3 pt-2">
-          <button type="button" onclick="closeChangePinModal()" class="w-1/2 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-semibold text-xs hover:bg-slate-50 transition">Cancel</button>
-          <button type="submit" class="w-1/2 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-600/30 transition">Save New PIN</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- 3. Inspection Rating Evaluation Modal -->
-  <div id="inspectionModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-blue-100 space-y-5">
-      
-      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-        <div class="flex items-center space-x-2.5">
-          <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
-            <i class="fa-solid fa-clipboard-check"></i>
-          </div>
-          <div>
-            <h3 class="text-base font-bold text-slate-900" id="modalSectionTitle">Log Inspection</h3>
-            <p class="text-xs text-slate-500 truncate max-w-[220px]" id="modalSectionSub">Section evaluation entry</p>
-          </div>
-        </div>
-        <button onclick="closeInspectionModal()" class="text-slate-400 hover:text-slate-600 text-lg">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-
-      <form id="inspectionForm" onsubmit="saveInspectionLog(event)" class="space-y-4">
-        <input type="hidden" id="modalSectionId">
+      <form id="ratingForm" onsubmit="handleRatingSubmit(event)" class="space-y-4">
+        <input type="hidden" id="modalLogId">
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Date</label>
-            <input type="date" id="modalDate" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-600 focus:outline-none">
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">Section</label>
+            <select id="modalSectionSelect" required class="w-full text-xs py-2 px-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <!-- Populated dynamically -->
+            </select>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Session</label>
-            <select id="modalSession" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-600 focus:outline-none">
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">Session</label>
+            <select id="modalSessionSelect" required class="w-full text-xs py-2 px-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option value="AM">AM Inspection</option>
               <option value="PM">PM Inspection</option>
             </select>
           </div>
         </div>
 
-        <!-- Star Rating Picker -->
         <div>
-          <div class="flex items-center justify-between mb-2">
-            <label class="text-xs font-semibold text-slate-700">Cleanliness Rating</label>
-            <span id="ratingClassificationBadge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">Clean (5.0 Stars)</span>
-          </div>
-          
-          <div class="flex items-center justify-center space-x-3 py-3 bg-slate-50 rounded-2xl border border-slate-200">
-            <div id="starRatingSelector" class="flex space-x-1 text-2xl cursor-pointer">
-              <i class="fa-solid fa-star text-amber-400 hover:scale-110 transition" data-rating="1" onclick="selectStarRating(1)"></i>
-              <i class="fa-solid fa-star text-amber-400 hover:scale-110 transition" data-rating="2" onclick="selectStarRating(2)"></i>
-              <i class="fa-solid fa-star text-amber-400 hover:scale-110 transition" data-rating="3" onclick="selectStarRating(3)"></i>
-              <i class="fa-solid fa-star text-amber-400 hover:scale-110 transition" data-rating="4" onclick="selectStarRating(4)"></i>
-              <i class="fa-solid fa-star text-amber-400 hover:scale-110 transition" data-rating="5" onclick="selectStarRating(5)"></i>
-            </div>
-            <span id="ratingScoreText" class="text-sm font-extrabold text-slate-800 ml-2">5.0 / 5.0</span>
-          </div>
-          <input type="hidden" id="modalRating" value="5">
+          <label class="block text-[11px] font-bold text-slate-600 mb-1">Inspection Date</label>
+          <input type="date" id="modalDateInput" required class="w-full text-xs py-2 px-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
 
-        <!-- Inspector Remarks -->
+        <!-- Interactive Star Picker -->
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Inspector Remarks / Sanitation Notes</label>
-          <textarea id="modalRemarks" rows="3" placeholder="Specify observations (e.g., floors swept, trash bins emptied, windows wiped, plant box weeded...)" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs focus:ring-2 focus:ring-blue-600 focus:outline-none"></textarea>
+          <label class="block text-[11px] font-bold text-slate-600 mb-1 text-center">Sanitation Rating (1 to 5 Stars)</label>
+          <div class="flex items-center justify-center space-x-2 py-2 bg-slate-50 rounded-xl border border-slate-200">
+            <button type="button" onclick="setModalStars(1)" class="star-btn text-2xl text-slate-300 hover:text-amber-400 transition" data-val="1"><i class="fa-solid fa-star"></i></button>
+            <button type="button" onclick="setModalStars(2)" class="star-btn text-2xl text-slate-300 hover:text-amber-400 transition" data-val="2"><i class="fa-solid fa-star"></i></button>
+            <button type="button" onclick="setModalStars(3)" class="star-btn text-2xl text-slate-300 hover:text-amber-400 transition" data-val="3"><i class="fa-solid fa-star"></i></button>
+            <button type="button" onclick="setModalStars(4)" class="star-btn text-2xl text-slate-300 hover:text-amber-400 transition" data-val="4"><i class="fa-solid fa-star"></i></button>
+            <button type="button" onclick="setModalStars(5)" class="star-btn text-2xl text-slate-300 hover:text-amber-400 transition" data-val="5"><i class="fa-solid fa-star"></i></button>
+          </div>
+          <p id="starRatingLabel" class="text-center text-xs font-bold text-blue-600 mt-1">3.0 Stars - Satisfactory Cleanliness</p>
         </div>
 
-        <div class="flex space-x-3 pt-2">
-          <button type="button" onclick="closeInspectionModal()" class="w-1/2 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-semibold text-xs hover:bg-slate-50 transition">Cancel</button>
-          <button type="submit" class="w-1/2 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-600/30 transition">Save Log</button>
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 mb-1">Inspector Remarks / Notes</label>
+          <textarea id="modalRemarksInput" rows="3" placeholder="Specify clean or uncollected waste, unmapped areas, desk alignment..." class="w-full text-xs py-2 px-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+        </div>
+
+        <div class="flex items-center gap-2 pt-2">
+          <button type="button" onclick="closeRatingModal()" class="w-1/2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition">Cancel</button>
+          <button type="submit" class="w-1/2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow">Save Inspection Log</button>
         </div>
       </form>
-
     </div>
   </div>
 
-  <!-- Toast Notification Bar -->
-  <div id="toastNotification" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none flex items-center space-x-3 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-2xl border border-blue-500/30">
-    <div id="toastIcon" class="text-blue-400 text-lg">
-      <i class="fa-solid fa-circle-check"></i>
+  <!-- MODAL 4: Edit Permanent Cleaning Zone Modal -->
+  <div id="zoneEditModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border border-slate-100">
+      <div class="text-center mb-4">
+        <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-2 text-xl shadow-inner">
+          <i class="fa-solid fa-map-location-dot"></i>
+        </div>
+        <h3 class="font-bold text-base text-slate-900">Edit Official Cleaning Zone</h3>
+        <p id="zoneEditSectionTitle" class="text-xs font-semibold text-blue-600 mt-0.5">Grade 7 - Diamond</p>
+      </div>
+
+      <div class="space-y-4">
+        <input type="hidden" id="zoneEditSectionId">
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 mb-1">Assigned Campus Area / Zone</label>
+          <input type="text" id="zoneEditInput" placeholder="e.g. Quadrangle, Canteen Area, Main Corridor" class="w-full text-xs py-2.5 px-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+          <p class="text-[10px] text-slate-400 mt-1">This permanent cleaning zone assignment updates across all teacher reports and logs.</p>
+        </div>
+
+        <div class="flex items-center gap-2 pt-2">
+          <button onclick="closeZoneEditModal()" class="w-1/2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition">Cancel</button>
+          <button onclick="saveZoneEdit()" class="w-1/2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow">Save Cleaning Zone</button>
+        </div>
+      </div>
     </div>
-    <div class="text-xs font-semibold" id="toastMessage">Action completed successfully</div>
   </div>
 
+
+  <!-- ==================== JAVASCRIPT LOGIC ==================== -->
   <script>
-    /* MASTER SECTION DIRECTORY DATA (Bonbonon High School - 15 Sections) */
-    const SECTIONS_DIRECTORY = [
-      { id: 'g7-apple', grade: 'Grade 7', name: 'APPLE', area: 'likod sa room, tabay, front sa room hangtud sa plant box atubangan sa CR. Katunga sa likod sa CR padulong tabay' },
-      { id: 'g7-blueberry', grade: 'Grade 7', name: 'Blueberry', area: 'gate atobangan , classroom in ug out' },
-      { id: 'g7-cherry', grade: 'Grade 7', name: 'Cherry', area: 'entrance(nanay Tesie, hangtod sa nangka, in ug out sa classroom' },
-      { id: 'g8-garnet', grade: 'Grade 8', name: 'Garnet', area: 'Atubangan sa room kutob sa haligi sa stage ug back.' },
-      { id: 'g8-opal', grade: 'Grade 8', name: 'Opal', area: 'Atubangan sa room pdung sa stage, in and out sa room' },
-      { id: 'g8-ruby', grade: 'Grade 8', name: 'Ruby', area: 'atubangan kutob sa talisay, likod sa room, kilid (tunga ang Lily ug Ruby)' },
-      { id: 'g9-earth', grade: 'Grade 9', name: 'Earth', area: 'atubangan sa room hangtud sa gate' },
-      { id: 'g9-neptune', grade: 'Grade 9', name: 'Neptune', area: 'atubangan sa room hangtod sa kulo,kilid sa room.' },
-      { id: 'g9-venus', grade: 'Grade 9', name: 'Venus', area: 'atubangan sa room ,from ate Alice store taman sa nangka.' },
-      { id: 'g10-daisy', grade: 'Grade 10', name: 'Daisy', area: 'in front of the classroom' },
-      { id: 'g10-lily', grade: 'Grade 10', name: 'Lily', area: 'front, side, and back sa classroom.' },
-      { id: 'g11-athena', grade: 'Grade 11', name: 'Athena', area: 'Designated Senior High Zone' },
-      { id: 'g11-hera', grade: 'Grade 11', name: 'Hera', area: 'Designated Senior High Zone' },
-      { id: 'g12-apollo', grade: 'Grade 12', name: 'Apollo', area: 'Designated Senior High Zone' },
-      { id: 'g12-zeus', grade: 'Grade 12', name: 'Zeus', area: 'Designated Senior High Zone' }
+    // 15 Master Class Sections
+    const MASTER_SECTIONS = [
+      { id: "7-diamond", name: "Grade 7 - Diamond", grade: "Grade 7", defaultZone: "Main Entrance & Flagpole Area" },
+      { id: "7-ruby", name: "Grade 7 - Ruby", grade: "Grade 7", defaultZone: "Grade 7 Building Corridor & Grounds" },
+      { id: "8-emerald", name: "Grade 8 - Emerald", grade: "Grade 8", defaultZone: "Main Library & Computer Lab Perimeter" },
+      { id: "8-sapphire", name: "Grade 8 - Sapphire", grade: "Grade 8", defaultZone: "Grade 8 Building Corridor & Pathways" },
+      { id: "9-opal", name: "Grade 9 - Opal", grade: "Grade 9", defaultZone: "Science Laboratory Grounds & Rear Lawn" },
+      { id: "9-jade", name: "Grade 9 - Jade", grade: "Grade 9", defaultZone: "Grade 9 Building Corridor & Side Gardens" },
+      { id: "10-topaz", name: "Grade 10 - Topaz", grade: "Grade 10", defaultZone: "Main Canteen Area & Dining Space" },
+      { id: "10-garnet", name: "Grade 10 - Garnet", grade: "Grade 10", defaultZone: "Grade 10 Building Corridor & Backyard" },
+      { id: "11-stem-a", name: "Grade 11 - STEM A", grade: "Grade 11", defaultZone: "Covered Gymnasium & Stage Area" },
+      { id: "11-tvl-a", name: "Grade 11 - TVL A", grade: "Grade 11", defaultZone: "Industrial Arts Workshop Exterior" },
+      { id: "11-humss-a", name: "Grade 11 - HUMSS A", grade: "Grade 11", defaultZone: "Senior High Building Front Lawn" },
+      { id: "12-stem-b", name: "Grade 12 - STEM B", grade: "Grade 12", defaultZone: "Science & Innovation Hub Surroundings" },
+      { id: "12-tvl-b", name: "Grade 12 - TVL B", grade: "Grade 12", defaultZone: "Home Economics Building Grounds" },
+      { id: "12-humss-b", name: "Grade 12 - HUMSS B", grade: "Grade 12", defaultZone: "Senior High Building Courtyard" },
+      { id: "12-abm-a", name: "Grade 12 - ABM A", grade: "Grade 12", defaultZone: "School Administration Grounds & Path" }
     ];
 
-    const LOCAL_STORAGE_KEY = 'bhs_cleaning_db_v3';
-    const PIN_STORAGE_KEY = 'bhs_admin_pin';
+    // Application State Variables
+    let currentTab = 'leaderboard';
+    let currentFilter = 'overall';
+    let isAdminUnlocked = false;
+    let selectedModalStars = 3;
+    let pendingAdminAction = null;
+    let chartInstance = null;
 
-    // Helper: Retrieve saved Admin PIN (Default: '1234')
-    function getAdminPin() {
-      return localStorage.getItem(PIN_STORAGE_KEY) || '1234';
+    // LocalStorage Data Keys
+    const KEY_PIN = 'bhs_admin_pin';
+    const KEY_LOGS = 'bhs_cleaning_logs_v3';
+    const KEY_ZONES = 'bhs_section_zones';
+
+    // App Initialization
+    document.addEventListener('DOMContentLoaded', () => {
+      initDefaultData();
+      setupDateInputs();
+      populateSectionDropdowns();
+      renderAdminStatus();
+      renderAll();
+    });
+
+    // Helper: Retrieve Official Cleaning Zone for a Section
+    function getSectionZone(sectionId) {
+      const customZones = JSON.parse(localStorage.getItem(KEY_ZONES) || '{}');
+      if (customZones[sectionId]) return customZones[sectionId];
+      const found = MASTER_SECTIONS.find(s => s.id === sectionId);
+      return found ? found.defaultZone : "General Campus Area";
     }
 
-    // Application Global State
-    let state = {
-      isAdmin: false,
-      activeTab: 'analytics',
-      timeframe: 'overall',
-      selectedDate: getTodayString(),
-      selectedSession: 'AM',
-      logs: [],
-      chartInstance: null,
-      pendingTargetLog: null // Remembers target section log when prompted for PIN
-    };
-
-    function getTodayString() {
-      const today = new Date();
-      const yyyy = today.getFullYear();
-      const mm = String(today.getMonth() + 1).padStart(2, '0');
-      const dd = String(today.getDate()).padStart(2, '0');
-      return `${yyyy}-${mm}-${dd}`;
-    }
-
-    function seedSampleDataIfEmpty() {
-      const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (stored) {
-        try {
-          state.logs = JSON.parse(stored);
-          return;
-        } catch (e) {
-          console.error('Failed to parse stored logs', e);
-        }
+    // Initialize Mock Inspection Data if Empty
+    function initDefaultData() {
+      if (!localStorage.getItem(KEY_PIN)) {
+        localStorage.setItem(KEY_PIN, '1234');
       }
 
-      const sampleLogs = [];
-      const remarksList = [
-        "Spotless floors, empty trash cans, well-arranged desks.",
-        "Very clean and orderly classroom environment.",
-        "Swept thoroughly in and out of the classroom.",
-        "Trash bin left unemptied near the doorway.",
-        "Unswept debris noticed under back row desks.",
-        "Excellent outdoor garden and plant box maintenance.",
-        "Clean chalkboards, neat chairs, spotless floor.",
-        "Weeds trimmed in plant box, front pathway swept.",
-        "Stage perimeter free of litter, clean front.",
-        "Organized interior, clean windows and whiteboard."
-      ];
-
-      const today = new Date();
-
-      // Seed 14 days of realistic logs
-      for (let d = 0; d < 14; d++) {
-        const currentDate = new Date(today);
-        currentDate.setDate(today.getDate() - d);
-        const dateStr = currentDate.toISOString().split('T')[0];
-
-        SECTIONS_DIRECTORY.forEach((section, index) => {
-          ['AM', 'PM'].forEach(session => {
-            let baseRating = 3.6 + (index % 3) * 0.4 + Math.random() * 0.7;
-            if (index === 0) baseRating = 4.8 + Math.random() * 0.2; // Top 1
-            if (index === 1) baseRating = 4.6 + Math.random() * 0.3; // Top 2
-            if (index === 2) baseRating = 4.4 + Math.random() * 0.3; // Top 3
-            
-            // Seed priority attention items (<= 2.5 stars)
-            if ((index === 4 || index === 8) && (d === 0 || d === 2) && session === 'PM') {
-              baseRating = 1.5 + Math.random() * 0.8;
-            }
-
-            const rating = Math.min(5, Math.max(1, parseFloat(baseRating.toFixed(1))));
-            let remark = remarksList[0];
-            if (rating >= 4.0) remark = remarksList[Math.floor(Math.random() * 3)];
-            else if (rating >= 3.0) remark = remarksList[3 + Math.floor(Math.random() * 2)];
-            else remark = "Urgent sanitation required: Litter in assigned area, unemptied bins.";
-
-            sampleLogs.push({
-              id: `log-${section.id}-${dateStr}-${session}`,
-              sectionId: section.id,
-              date: dateStr,
-              session: session,
-              rating: rating,
-              remarks: remark,
-              updatedAt: currentDate.toISOString()
-            });
-          });
-        });
+      if (!localStorage.getItem(KEY_LOGS)) {
+        const todayStr = new Date().toISOString().split('T')[0];
+        const initialMockLogs = [
+          { id: "log-1", sectionId: "7-diamond", date: todayStr, session: "AM", rating: 4.5, remarks: "Spotless entryway and flagpole perimeter.", timestamp: Date.now() - 3600000 },
+          { id: "log-2", sectionId: "7-ruby", date: todayStr, session: "PM", rating: 2.0, remarks: "Scattered dry leaves along the corridor pathway.", timestamp: Date.now() - 7200000 },
+          { id: "log-3", sectionId: "8-emerald", date: todayStr, session: "AM", rating: 5.0, remarks: "Excellent trash segregation at computer lab grounds.", timestamp: Date.now() - 10800000 },
+          { id: "log-4", sectionId: "10-topaz", date: todayStr, session: "PM", rating: 2.0, remarks: "Unattended canteen food wrappers left after lunch.", timestamp: Date.now() - 14400000 },
+          { id: "log-5", sectionId: "11-stem-a", date: todayStr, session: "AM", rating: 4.8, remarks: "Gym bleachers and stage area thoroughly swept.", timestamp: Date.now() - 18000000 },
+          { id: "log-6", sectionId: "12-tvl-b", date: todayStr, session: "PM", rating: 1.5, remarks: "Overflowing waste bins near HE lawn.", timestamp: Date.now() - 21600000 }
+        ];
+        localStorage.setItem(KEY_LOGS, JSON.stringify(initialMockLogs));
       }
-
-      state.logs = sampleLogs;
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(sampleLogs));
     }
 
+    function setupDateInputs() {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('logDateFilter').value = today;
+      document.getElementById('modalDateInput').value = today;
+    }
+
+    function populateSectionDropdowns() {
+      const logSelect = document.getElementById('logSectionFilter');
+      const modalSelect = document.getElementById('modalSectionSelect');
+      
+      logSelect.innerHTML = '<option value="ALL">All 15 Sections</option>';
+      modalSelect.innerHTML = '';
+
+      MASTER_SECTIONS.forEach(sec => {
+        const zone = getSectionZone(sec.id);
+        logSelect.innerHTML += `<option value="${sec.id}">${sec.name}</option>`;
+        modalSelect.innerHTML += `<option value="${sec.id}">${sec.name} (${zone})</option>`;
+      });
+    }
+
+    // Toast Notification System
+    function showToast(msg, isError = false) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMsg');
+      const toastIcon = document.getElementById('toastIcon');
+
+      toastMsg.innerText = msg;
+      toastIcon.className = isError 
+        ? "fa-solid fa-triangle-exclamation text-red-400" 
+        : "fa-solid fa-circle-check text-emerald-400";
+
+      toast.classList.remove('translate-y-[-100px]', 'opacity-0', 'pointer-events-none');
+      setTimeout(() => {
+        toast.classList.add('translate-y-[-100px]', 'opacity-0', 'pointer-events-none');
+      }, 3000);
+    }
+
+    // Tab Navigation
     function switchTab(tabId) {
-      state.activeTab = tabId;
-
+      currentTab = tabId;
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
       document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.className = 'tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center space-x-2 transition-all text-slate-600 hover:text-blue-700 hover:bg-blue-50/80 whitespace-nowrap';
+        btn.classList.remove('bg-blue-600', 'text-white', 'shadow-sm');
+        btn.classList.add('text-slate-300');
       });
 
+      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
       const activeBtn = document.getElementById(`tabBtn-${tabId}`);
-      if (activeBtn) {
-        activeBtn.className = 'tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center space-x-2 transition-all bg-blue-600 text-white shadow-md shadow-blue-500/25 whitespace-nowrap';
-      }
+      activeBtn.classList.add('bg-blue-600', 'text-white', 'shadow-sm');
+      activeBtn.classList.remove('text-slate-300');
 
-      document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
-      const activeContent = document.getElementById(`tab-${tabId}`);
-      if (activeContent) activeContent.classList.remove('hidden');
-
-      if (tabId === 'analytics') {
-        renderAnalyticsTab();
-      } else if (tabId === 'logs') {
-        renderDailyLogs();
-      } else if (tabId === 'attention') {
-        renderAttentionTab();
-      } else if (tabId === 'sections') {
-        renderDirectoryGrid();
-      }
-
-      updateNeedsAttentionBadge();
+      renderAll();
     }
 
-    function setTimeframe(tf) {
-      state.timeframe = tf;
-      
-      document.querySelectorAll('.tf-btn').forEach(btn => {
-        btn.className = 'tf-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition-all';
-      });
-
-      const activeTfBtn = document.getElementById(`tf-${tf}`);
-      if (activeTfBtn) {
-        activeTfBtn.className = 'tf-btn px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white shadow-sm transition-all';
-      }
-
-      renderAnalyticsTab();
-    }
-
-    function filterLogsByTimeframe() {
-      if (state.timeframe === 'overall') return state.logs;
-
-      const now = new Date();
-      return state.logs.filter(log => {
-        const logDate = new Date(log.date);
-        const diffTime = Math.abs(now - logDate);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-        if (state.timeframe === 'daily') return log.date === getTodayString();
-        if (state.timeframe === 'weekly') return diffDays <= 7;
-        if (state.timeframe === 'monthly') return diffDays <= 30;
-        if (state.timeframe === 'yearly') return logDate.getFullYear() === now.getFullYear();
-        return true;
-      });
-    }
-
-    function calculateSectionAverages() {
-      const filteredLogs = filterLogsByTimeframe();
-
-      const map = {};
-      SECTIONS_DIRECTORY.forEach(sec => {
-        map[sec.id] = {
-          ...sec,
-          totalScore: 0,
-          count: 0,
-          avgScore: 0
-        };
-      });
-
-      filteredLogs.forEach(log => {
-        if (map[log.sectionId]) {
-          map[log.sectionId].totalScore += parseFloat(log.rating);
-          map[log.sectionId].count += 1;
-        }
-      });
-
-      const list = Object.values(map).map(item => {
-        item.avgScore = item.count > 0 ? parseFloat((item.totalScore / item.count).toFixed(2)) : 0;
-        return item;
-      });
-
-      list.sort((a, b) => b.avgScore - a.avgScore || b.count - a.count);
-
-      // Competition tie handling
-      for (let i = 0; i < list.length; i++) {
-        if (i > 0 && list[i].avgScore === list[i - 1].avgScore) {
-          list[i].rank = list[i - 1].rank;
-        } else {
-          list[i].rank = i + 1;
-        }
-      }
-
-      return { rankings: list, totalEvaluations: filteredLogs.length, filteredLogs: filteredLogs };
-    }
-
-    function renderAnalyticsTab() {
-      const { rankings, totalEvaluations, filteredLogs } = calculateSectionAverages();
-
-      const tfLabels = {
-        daily: 'Daily (Today)',
-        weekly: 'Past 7 Days',
-        monthly: 'Past 30 Days',
-        yearly: 'Current Year',
-        overall: 'Overall All-Time'
-      };
-      document.getElementById('timeframeLabel').innerText = tfLabels[state.timeframe] || 'Overall';
-      document.getElementById('evaluatedCountText').innerText = `${totalEvaluations} Inspection Logs Evaluated`;
-
-      // Render Top 3 Podium Cards
-      const podiumContainer = document.getElementById('podiumContainer');
-      podiumContainer.innerHTML = '';
-
-      const top3 = rankings.slice(0, 3);
-      const podiumClasses = ['podium-card-1 border-blue-200', 'podium-card-2 border-slate-200', 'podium-card-3 border-emerald-200'];
-      const rankBadges = [
-        '<span class="px-3 py-1 bg-amber-400 text-amber-950 font-black rounded-xl text-xs shadow-sm"><i class="fa-solid fa-crown mr-1"></i>Rank #1 (Gold)</span>',
-        '<span class="px-3 py-1 bg-slate-300 text-slate-900 font-extrabold rounded-xl text-xs shadow-sm"><i class="fa-solid fa-medal mr-1"></i>Rank #2 (Silver)</span>',
-        '<span class="px-3 py-1 bg-amber-700 text-white font-extrabold rounded-xl text-xs shadow-sm"><i class="fa-solid fa-award mr-1"></i>Rank #3 (Bronze)</span>'
-      ];
-
-      top3.forEach((item, idx) => {
-        const card = document.createElement('div');
-        card.className = `${podiumClasses[idx]} rounded-3xl p-6 shadow-card-soft border flex flex-col justify-between space-y-4 relative overflow-hidden transition-all hover:shadow-md`;
-
-        card.innerHTML = `
-          <div class="flex items-center justify-between">
-            ${rankBadges[idx]}
-            <i class="fa-solid fa-trophy text-2xl ${idx === 0 ? 'text-amber-500' : idx === 1 ? 'text-slate-400' : 'text-amber-700'}"></i>
-          </div>
-
-          <div>
-            <p class="text-xs font-bold text-blue-800 uppercase tracking-wider">${item.grade}</p>
-            <h3 class="text-xl font-extrabold text-slate-900 mt-0.5">Section ${item.name}</h3>
-            <p class="text-xs text-slate-600 line-clamp-2 mt-1.5"><i class="fa-solid fa-location-dot text-blue-600 mr-1"></i>${item.area}</p>
-          </div>
-
-          <div class="pt-3 border-t border-slate-200/80 flex items-center justify-between">
-            <div>
-              <div class="text-2xl font-black text-slate-900">${item.avgScore.toFixed(2)} <span class="text-xs font-semibold text-slate-500">/ 5.0</span></div>
-              <p class="text-[11px] text-slate-500 font-medium">${item.count} Inspections</p>
-            </div>
-            <div class="text-amber-400 text-xs flex space-x-0.5">
-              ${renderStarIcons(item.avgScore)}
-            </div>
-          </div>
-        `;
-
-        podiumContainer.appendChild(card);
-      });
-
-      // Render SECTIONS NEEDING PRIORITY ATTENTION (directly under Podium)
-      renderPodiumPriorityAttention(filteredLogs);
-
-      // Render Detailed Directory Table
-      renderLeaderboardTable(rankings);
-
-      // Render Chart
-      renderLeaderboardChart(rankings);
-    }
-
-    function renderPodiumPriorityAttention(filteredLogs) {
-      const container = document.getElementById('podiumPriorityAttentionGrid');
-      const countBadge = document.getElementById('prioritySectionCountBadge');
-      container.innerHTML = '';
-
-      // Find logs with rating <= 2.5 in active timeframe
-      const flaggedLogs = filteredLogs.filter(log => parseFloat(log.rating) <= 2.5);
-      
-      // Sort newest date first
-      flaggedLogs.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-      countBadge.innerText = `${flaggedLogs.length} Flagged`;
-
-      if (flaggedLogs.length === 0) {
-        container.innerHTML = `
-          <div class="col-span-full bg-white/90 rounded-2xl border border-emerald-200 p-6 text-center space-y-2">
-            <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-xl mx-auto flex items-center justify-center text-lg">
-              <i class="fa-solid fa-circle-check"></i>
-            </div>
-            <h4 class="text-sm font-bold text-slate-900">All Sections Clean & Compliant!</h4>
-            <p class="text-xs text-slate-500">No inspection ratings of &le; 2.5 Stars found in the selected timeframe.</p>
-          </div>
-        `;
-        return;
-      }
-
-      flaggedLogs.slice(0, 6).forEach(log => {
-        const sec = SECTIONS_DIRECTORY.find(s => s.id === log.sectionId) || { grade: 'Grade', name: 'Section', area: 'N/A' };
-
-        const card = document.createElement('div');
-        card.className = 'bg-white rounded-2xl border-l-4 border-l-rose-500 border border-slate-200 p-4 shadow-card-soft space-y-3 flex flex-col justify-between hover:shadow-md transition-all';
-
-        card.innerHTML = `
-          <div class="space-y-2">
-            <div class="flex items-center justify-between flex-wrap gap-1">
-              <span class="px-2.5 py-0.5 rounded-md text-[10px] font-extrabold bg-blue-50 text-blue-800 border border-blue-100 uppercase">
-                ${sec.grade} - ${sec.name}
-              </span>
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${log.session === 'AM' ? 'bg-amber-100 text-amber-900 border border-amber-200' : 'bg-indigo-100 text-indigo-900 border border-indigo-200'}">
-                <i class="fa-regular fa-clock mr-1"></i>${log.session} Inspection
-              </span>
-            </div>
-
-            <div class="flex items-center justify-between text-xs text-slate-500 font-medium">
-              <span><i class="fa-regular fa-calendar mr-1"></i>${log.date}</span>
-              <span class="text-[11px] font-extrabold text-rose-600 uppercase">Needs Attention</span>
-            </div>
-
-            <p class="text-xs text-slate-600 line-clamp-2">
-              <strong class="text-slate-800"><i class="fa-solid fa-location-dot text-blue-600 mr-1"></i>Zone:</strong> ${sec.area}
-            </p>
-
-            <p class="text-xs italic bg-rose-50/70 text-rose-950 p-2.5 rounded-xl border border-rose-100/80 leading-relaxed">
-              "${log.remarks}"
-            </p>
-          </div>
-
-          <!-- INTERACTIVE STAR RATING BUTTON WIDGET -->
-          <div onclick="triggerStarRatingEdit('${log.sectionId}', '${log.date}', '${log.session}')" 
-               class="star-widget-interactive bg-gradient-to-r from-amber-50 to-blue-50 hover:from-amber-100 hover:to-blue-100 border border-amber-300/80 p-3 rounded-xl cursor-pointer flex items-center justify-between group shadow-sm">
-            
-            <div class="flex items-center space-x-2">
-              <div class="text-amber-400 text-sm flex space-x-0.5">
-                ${renderStarIcons(log.rating)}
-              </div>
-              <span class="text-xs font-black text-slate-900">${parseFloat(log.rating).toFixed(1)}</span>
-            </div>
-
-            <div class="flex items-center space-x-1.5 text-blue-700 font-bold text-xs group-hover:text-blue-900">
-              <i class="fa-solid fa-pen-to-square text-xs text-blue-600 group-hover:scale-110 transition"></i>
-              <span class="text-[11px] underline">Click stars to edit rating</span>
-            </div>
-          </div>
-        `;
-
-        container.appendChild(card);
-      });
-    }
-
-    /* Direct Star Click Trigger */
-    function triggerStarRatingEdit(sectionId, date, session) {
-      state.pendingTargetLog = { sectionId, date, session };
-
-      if (!state.isAdmin) {
-        openAdminModal();
+    // Admin Toggle & Authentication
+    function toggleAdminState() {
+      if (isAdminUnlocked) {
+        isAdminUnlocked = false;
+        showToast("Admin mode locked");
+        renderAdminStatus();
       } else {
-        openInspectionModal(sectionId, date, session);
+        openAdminPinModal();
       }
     }
 
-    function renderLeaderboardTable(rankings) {
-      const tbody = document.getElementById('leaderboardTableBody');
-      tbody.innerHTML = '';
-
-      rankings.forEach(item => {
-        const tr = document.createElement('tr');
-        tr.className = 'hover:bg-blue-50/50 transition-colors';
-
-        let badgeStyle = 'bg-blue-50 text-blue-700 border-blue-200';
-        let statusText = 'Clean (4.0 - 5.0)';
-        if (item.avgScore <= 2.5 && item.count > 0) {
-          badgeStyle = 'bg-rose-50 text-rose-700 border-rose-200';
-          statusText = 'Needs Attention (<= 2.5)';
-        } else if (item.avgScore < 4.0 && item.count > 0) {
-          badgeStyle = 'bg-amber-50 text-amber-700 border-amber-200';
-          statusText = 'Fair (3.0 - 3.9)';
-        } else if (item.count === 0) {
-          badgeStyle = 'bg-slate-50 text-slate-500 border-slate-200';
-          statusText = 'Uninspected';
-        }
-
-        tr.innerHTML = `
-          <td class="py-3.5 px-4 text-center font-extrabold text-slate-800">
-            <span class="inline-flex items-center justify-center w-7 h-7 rounded-xl ${item.rank <= 3 ? 'bg-blue-600 text-white font-bold shadow-sm' : 'bg-slate-100 text-slate-700'}">
-              ${item.rank}
-            </span>
-          </td>
-          <td class="py-3.5 px-4 font-bold text-slate-900">
-            <div>${item.grade} - ${item.name}</div>
-          </td>
-          <td class="py-3.5 px-4 text-center">
-            <div class="font-black text-blue-700 text-sm">${item.avgScore.toFixed(2)}</div>
-            <div class="text-amber-400 text-[10px] space-x-0.5">${renderStarIcons(item.avgScore)}</div>
-          </td>
-          <td class="py-3.5 px-4 text-center font-semibold text-slate-600">
-            ${item.count}
-          </td>
-          <td class="py-3.5 px-4 text-center">
-            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold border ${badgeStyle}">
-              ${statusText}
-            </span>
-          </td>
-          <td class="py-3.5 px-4 text-xs text-slate-600 max-w-xs truncate">
-            ${item.area}
-          </td>
-        `;
-
-        tbody.appendChild(tr);
-      });
-    }
-
-    function renderLeaderboardChart(rankings) {
-      const canvas = document.getElementById('leaderboardChart');
-      const fallback = document.getElementById('htmlFallbackChart');
-
-      if (typeof Chart === 'undefined') {
-        canvas.classList.add('hidden');
-        fallback.classList.remove('hidden');
-        renderFallbackChart(rankings);
-        return;
-      }
-
-      canvas.classList.remove('hidden');
-      fallback.classList.add('hidden');
-
-      const ctx = canvas.getContext('2d');
-      if (state.chartInstance) state.chartInstance.destroy();
-
-      const labels = rankings.map(r => `${r.grade} ${r.name}`);
-      const scores = rankings.map(r => r.avgScore);
-
-      const barColors = rankings.map(r => {
-        if (r.count === 0) return '#cbd5e1';
-        if (r.avgScore >= 4.0) return '#2563eb';
-        if (r.avgScore >= 3.0) return '#d97706';
-        return '#e11d48';
-      });
-
-      state.chartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Average Score (Out of 5.0 Stars)',
-            data: scores,
-            backgroundColor: barColors,
-            borderRadius: 6,
-            barThickness: 16
-          }]
-        },
-        options: {
-          indexAxis: 'y',
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: '#0f172a',
-              padding: 10,
-              cornerRadius: 10,
-              callbacks: {
-                label: (context) => ` Score: ${context.parsed.x.toFixed(2)} / 5.00 Stars`
-              }
-            }
-          },
-          scales: {
-            x: {
-              min: 0,
-              max: 5,
-              grid: { color: '#f1f5f9' }
-            },
-            y: {
-              grid: { display: false },
-              ticks: { font: { family: 'Inter', size: 11, weight: '600' }, color: '#334155' }
-            }
-          }
-        }
-      });
-    }
-
-    function renderFallbackChart(rankings) {
-      const fallback = document.getElementById('htmlFallbackChart');
-      fallback.innerHTML = '';
-
-      rankings.forEach(r => {
-        const pct = (r.avgScore / 5) * 100;
-        let colorClass = 'bg-blue-600';
-        if (r.avgScore < 3.0) colorClass = 'bg-rose-600';
-        else if (r.avgScore < 4.0) colorClass = 'bg-amber-500';
-
-        const row = document.createElement('div');
-        row.className = 'flex items-center text-xs space-x-2';
-        row.innerHTML = `
-          <div class="w-28 font-bold text-slate-700 truncate">${r.grade} ${r.name}</div>
-          <div class="flex-1 bg-slate-100 rounded-full h-3 overflow-hidden">
-            <div class="${colorClass} h-full rounded-full transition-all duration-500" style="width: ${pct}%"></div>
-          </div>
-          <div class="w-12 text-right font-extrabold text-slate-900">${r.avgScore.toFixed(1)}</div>
-        `;
-        fallback.appendChild(row);
-      });
-    }
-
-    function setSessionFilter(session) {
-      state.selectedSession = session;
-      renderDailyLogs();
-    }
-
-    function renderDailyLogs() {
-      const dateInput = document.getElementById('logDatePicker').value;
-      if (dateInput) state.selectedDate = dateInput;
-
-      const searchQuery = document.getElementById('sectionSearchInput').value.toLowerCase().trim();
-
-      ['AM', 'PM'].forEach(s => {
-        const btn = document.getElementById(`sessionBtn-${s}`);
-        if (s === state.selectedSession) {
-          btn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all bg-blue-600 text-white shadow-sm';
-        } else {
-          btn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:text-slate-900';
-        }
-      });
-
-      const grid = document.getElementById('dailyLogsGrid');
-      grid.innerHTML = '';
-
-      const filteredSections = SECTIONS_DIRECTORY.filter(sec => 
-        sec.name.toLowerCase().includes(searchQuery) || 
-        sec.grade.toLowerCase().includes(searchQuery) ||
-        sec.area.toLowerCase().includes(searchQuery)
-      );
-
-      filteredSections.forEach(sec => {
-        const existingLog = state.logs.find(l => l.sectionId === sec.id && l.date === state.selectedDate && l.session === state.selectedSession);
-
-        const card = document.createElement('div');
-        card.className = 'bg-white rounded-2xl border border-blue-100 p-5 shadow-card-soft hover:shadow-md transition-all flex flex-col justify-between space-y-4';
-
-        const rating = existingLog ? existingLog.rating : 0;
-        const remarks = existingLog ? existingLog.remarks : 'No evaluation recorded for this session.';
-
-        let statusBadge = '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200">Uninspected</span>';
-        if (existingLog) {
-          if (rating >= 4.0) {
-            statusBadge = '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200"><i class="fa-solid fa-circle-check mr-1"></i>Clean</span>';
-          } else if (rating >= 3.0) {
-            statusBadge = '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200"><i class="fa-solid fa-face-meh mr-1"></i>Fair</span>';
-          } else {
-            statusBadge = '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200"><i class="fa-solid fa-circle-exclamation mr-1"></i>Needs Attention</span>';
-          }
-        }
-
-        card.innerHTML = `
-          <div class="space-y-2.5">
-            <div class="flex items-center justify-between">
-              <span class="text-[11px] font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-md border border-blue-100">${sec.grade}</span>
-              ${statusBadge}
-            </div>
-            
-            <h3 class="text-base font-extrabold text-slate-900">Section ${sec.name}</h3>
-            
-            <p class="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex items-start space-x-2">
-              <i class="fa-solid fa-location-dot text-blue-600 mt-0.5 flex-shrink-0"></i>
-              <span class="leading-relaxed">${sec.area}</span>
-            </p>
-          </div>
-
-          <div class="pt-3 border-t border-slate-100 space-y-3">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-semibold text-slate-600">Inspection Score:</span>
-              <div class="flex items-center space-x-1">
-                <span class="text-xs font-extrabold text-slate-900">${existingLog ? rating.toFixed(1) : '--'}</span>
-                <div class="text-amber-400 text-xs">${existingLog ? renderStarIcons(rating) : '<i class="fa-regular fa-star text-slate-300"></i>'}</div>
-              </div>
-            </div>
-
-            <p class="text-xs italic text-slate-600 bg-blue-50/50 p-2.5 rounded-xl border border-blue-100/70">
-              "${remarks}"
-            </p>
-
-            <button onclick="handleLogButtonClick('${sec.id}')" class="w-full py-2.5 rounded-xl ${state.isAdmin ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-slate-100 hover:bg-blue-50 text-blue-700'} font-semibold text-xs transition shadow-sm flex items-center justify-center space-x-1.5">
-              <i class="fa-solid ${state.isAdmin ? 'fa-pen-to-square' : 'fa-lock'}"></i>
-              <span>${state.isAdmin ? (existingLog ? 'Edit Inspection Log' : 'Log Inspection') : 'Log Inspection (Admin)'}</span>
-            </button>
-          </div>
-        `;
-
-        grid.appendChild(card);
-      });
-    }
-
-    function handleLogButtonClick(sectionId) {
-      state.pendingTargetLog = { sectionId, date: state.selectedDate, session: state.selectedSession };
-
-      if (!state.isAdmin) {
-        openAdminModal();
-      } else {
-        openInspectionModal(sectionId, state.selectedDate, state.selectedSession);
-      }
-    }
-
-    function renderAttentionTab() {
-      const container = document.getElementById('attentionLogsContainer');
-      container.innerHTML = '';
-
-      const flaggedLogs = state.logs.filter(log => parseFloat(log.rating) <= 2.5);
-
-      if (flaggedLogs.length === 0) {
-        container.innerHTML = `
-          <div class="bg-white rounded-2xl border border-blue-100 p-8 text-center space-y-3 shadow-card-soft">
-            <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl mx-auto flex items-center justify-center text-xl shadow-inner">
-              <i class="fa-solid fa-shield-check"></i>
-            </div>
-            <h3 class="text-base font-bold text-slate-900">Zero Flagged Inspections</h3>
-            <p class="text-xs text-slate-500">All section cleaning areas are currently meeting cleanliness standards above 2.5 Stars!</p>
-          </div>
-        `;
-        return;
-      }
-
-      flaggedLogs.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-      flaggedLogs.forEach(log => {
-        const sec = SECTIONS_DIRECTORY.find(s => s.id === log.sectionId) || { grade: 'Grade', name: 'Section', area: 'N/A' };
-
-        const card = document.createElement('div');
-        card.className = 'bg-white rounded-2xl border-l-4 border-l-rose-500 border border-slate-200 p-5 shadow-card-soft space-y-3';
-
-        card.innerHTML = `
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div class="flex items-center space-x-2.5">
-              <span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-100 text-rose-800">${sec.grade} - ${sec.name}</span>
-              <span class="text-xs text-slate-500 font-semibold"><i class="fa-regular fa-calendar mr-1"></i>${log.date} (${log.session} Inspection)</span>
-            </div>
-            
-            <div onclick="triggerStarRatingEdit('${log.sectionId}', '${log.date}', '${log.session}')" 
-                 class="star-widget-interactive flex items-center space-x-2 bg-amber-50 hover:bg-amber-100 border border-amber-300 px-3 py-1.5 rounded-xl cursor-pointer">
-              <span class="font-extrabold text-rose-600 text-sm">${parseFloat(log.rating).toFixed(1)}</span>
-              <div class="text-amber-400 text-xs flex space-x-0.5">${renderStarIcons(log.rating)}</div>
-              <i class="fa-solid fa-pen-to-square text-xs text-blue-600 ml-1"></i>
-            </div>
-          </div>
-
-          <div class="text-xs text-slate-700 space-y-2">
-            <p><strong class="text-slate-900">Assigned Zone:</strong> ${sec.area}</p>
-            <div class="p-3 bg-rose-50/70 rounded-xl text-rose-950 border border-rose-100">
-              <strong>Inspector Remarks:</strong> "${log.remarks}"
-            </div>
-          </div>
-        `;
-
-        container.appendChild(card);
-      });
-    }
-
-    function updateNeedsAttentionBadge() {
-      const flaggedLogs = state.logs.filter(log => parseFloat(log.rating) <= 2.5);
-      const badge = document.getElementById('attentionCountBadge');
-      badge.innerText = flaggedLogs.length;
-    }
-
-    function renderDirectoryGrid() {
-      const grid = document.getElementById('directoryGrid');
-      grid.innerHTML = '';
-
-      SECTIONS_DIRECTORY.forEach((sec, idx) => {
-        const card = document.createElement('div');
-        card.className = 'bg-white rounded-2xl border border-blue-100 p-5 shadow-card-soft space-y-3 hover:border-blue-300 transition-all group';
-
-        card.innerHTML = `
-          <div class="flex items-center justify-between">
-            <span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100">${sec.grade}</span>
-            <span class="text-[11px] font-bold text-slate-400">Section #${idx + 1}</span>
-          </div>
-
-          <h3 class="text-lg font-extrabold text-slate-900 group-hover:text-blue-600 transition-colors">${sec.name}</h3>
-
-          <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-1">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Official Permanent Cleaning Zone</span>
-            <p class="text-xs text-slate-700 font-medium leading-relaxed">${sec.area}</p>
-          </div>
-        `;
-
-        grid.appendChild(card);
-      });
-    }
-
-    function openAdminModal() {
-      if (state.isAdmin) {
-        lockAdminMode();
-        return;
-      }
+    function openAdminPinModal(onSuccess = null) {
+      pendingAdminAction = onSuccess;
       document.getElementById('adminPinInput').value = '';
-      document.getElementById('adminPinModal').classList.remove('hidden');
+      document.getElementById('pinErrorMsg').classList.add('hidden');
+      document.getElementById('adminModal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('adminPinInput').focus(), 100);
     }
 
     function closeAdminModal() {
-      document.getElementById('adminPinModal').classList.add('hidden');
+      document.getElementById('adminModal').classList.add('hidden');
     }
 
     function verifyAdminPin() {
-      const pinInput = document.getElementById('adminPinInput').value;
-      const currentAdminPin = getAdminPin();
+      const inputPin = document.getElementById('adminPinInput').value.trim();
+      const storedPin = localStorage.getItem(KEY_PIN) || '1234';
 
-      if (pinInput === currentAdminPin) {
-        state.isAdmin = true;
+      if (inputPin === storedPin) {
+        isAdminUnlocked = true;
         closeAdminModal();
-        updateAdminUIState();
-        showToast('Admin privileges unlocked successfully!', 'success');
-
-        // If user clicked stars while locked, open inspection modal automatically
-        if (state.pendingTargetLog) {
-          const target = state.pendingTargetLog;
-          state.pendingTargetLog = null;
-          openInspectionModal(target.sectionId, target.date, target.session);
+        renderAdminStatus();
+        showToast("Admin Mode Unlocked!");
+        
+        if (typeof pendingAdminAction === 'function') {
+          const action = pendingAdminAction;
+          pendingAdminAction = null;
+          action();
         }
       } else {
-        showToast('Invalid Admin PIN. Please try again.', 'error');
+        document.getElementById('pinErrorMsg').classList.remove('hidden');
       }
     }
 
-    function lockAdminMode() {
-      state.isAdmin = false;
-      state.pendingTargetLog = null;
-      updateAdminUIState();
-      showToast('Admin Mode locked.', 'info');
-    }
+    function renderAdminStatus() {
+      const badgeDesktop = document.getElementById('adminBadgeDesktop');
+      const badgeMobile = document.getElementById('adminBadgeMobile');
+      const actionBtn = document.getElementById('adminActionBtn');
+      const changePinBtn = document.getElementById('changePinHeaderBtn');
 
-    function updateAdminUIState() {
-      const banner = document.getElementById('adminBanner');
-      const roleDot = document.getElementById('roleDot');
-      const roleText = document.getElementById('roleText');
-      const adminBtnLabel = document.getElementById('adminBtnLabel');
-      const adminAuthIcon = document.getElementById('adminAuthIcon');
-      const headerPinBtn = document.getElementById('adminHeaderPinBtn');
+      if (isAdminUnlocked) {
+        badgeDesktop.innerHTML = `<i class="fa-solid fa-unlock text-emerald-400"></i> Admin Mode`;
+        badgeDesktop.className = "text-xs px-3 py-1.5 rounded-full font-semibold bg-emerald-950 text-emerald-300 border border-emerald-700 flex items-center gap-1.5";
+        badgeMobile.innerText = "Admin";
+        badgeMobile.className = "text-xs px-2.5 py-1 rounded-full font-semibold bg-emerald-900 text-emerald-300 border border-emerald-700";
 
-      if (state.isAdmin) {
-        banner.classList.remove('hidden');
-        headerPinBtn.classList.remove('hidden');
-        roleDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse';
-        roleText.innerText = 'Admin Mode Active';
-        adminBtnLabel.innerText = 'Lock Admin';
-        adminAuthIcon.className = 'fa-solid fa-lock';
+        actionBtn.innerHTML = `<i class="fa-solid fa-lock"></i><span>Lock Admin</span>`;
+        actionBtn.className = "px-3.5 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-semibold transition flex items-center gap-1.5 shadow";
+        
+        changePinBtn.classList.remove('hidden');
       } else {
-        banner.classList.add('hidden');
-        headerPinBtn.classList.add('hidden');
-        roleDot.className = 'w-2.5 h-2.5 rounded-full bg-slate-400';
-        roleText.innerText = 'Teacher View Only';
-        adminBtnLabel.innerText = 'Admin Unlock';
-        adminAuthIcon.className = 'fa-solid fa-key';
-      }
+        badgeDesktop.innerHTML = `<i class="fa-solid fa-user-lock"></i> Viewer Mode`;
+        badgeDesktop.className = "text-xs px-3 py-1.5 rounded-full font-semibold bg-slate-800 text-slate-400 border border-slate-700 flex items-center gap-1.5";
+        badgeMobile.innerText = "Viewer";
+        badgeMobile.className = "text-xs px-2.5 py-1 rounded-full font-semibold bg-slate-800 text-slate-400 border border-slate-700";
 
-      if (state.activeTab === 'logs') renderDailyLogs();
+        actionBtn.innerHTML = `<i class="fa-solid fa-key"></i><span>Admin Unlock</span>`;
+        actionBtn.className = "px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold transition flex items-center gap-1.5 shadow";
+        
+        changePinBtn.classList.add('hidden');
+      }
     }
 
-    function openChangePinModalFromLogin() {
+    // Change Admin PIN Functions
+    function openChangePinModal() {
+      document.getElementById('currPinInput').value = '';
+      document.getElementById('newPinInput').value = '';
+      document.getElementById('confirmPinInput').value = '';
+      document.getElementById('changePinError').classList.add('hidden');
+      document.getElementById('changePinModal').classList.remove('hidden');
+    }
+
+    function switchModalToChangePin() {
       closeAdminModal();
       openChangePinModal();
-    }
-
-    function openChangePinModal() {
-      document.getElementById('currentPinInput').value = '';
-      document.getElementById('newPinInput').value = '';
-      document.getElementById('confirmNewPinInput').value = '';
-      document.getElementById('changePinModal').classList.remove('hidden');
     }
 
     function closeChangePinModal() {
       document.getElementById('changePinModal').classList.add('hidden');
     }
 
-    function saveNewAdminPin(e) {
-      e.preventDefault();
+    function saveNewPin() {
+      const currPin = document.getElementById('currPinInput').value.trim();
+      const newPin = document.getElementById('newPinInput').value.trim();
+      const confirmPin = document.getElementById('confirmPinInput').value.trim();
+      const storedPin = localStorage.getItem(KEY_PIN) || '1234';
+      const errEl = document.getElementById('changePinError');
 
-      const currentInput = document.getElementById('currentPinInput').value;
-      const newInput = document.getElementById('newPinInput').value;
-      const confirmInput = document.getElementById('confirmNewPinInput').value;
-      const actualPin = getAdminPin();
-
-      if (currentInput !== actualPin) {
-        showToast('Current PIN is incorrect.', 'error');
+      if (currPin !== storedPin) {
+        errEl.innerText = "Current PIN is incorrect.";
+        errEl.classList.remove('hidden');
+        return;
+      }
+      if (newPin.length < 4) {
+        errEl.innerText = "New PIN must be at least 4 digits.";
+        errEl.classList.remove('hidden');
+        return;
+      }
+      if (newPin !== confirmPin) {
+        errEl.innerText = "New PIN and confirmation do not match.";
+        errEl.classList.remove('hidden');
         return;
       }
 
-      if (newInput.length < 4) {
-        showToast('New PIN must be at least 4 digits.', 'error');
-        return;
-      }
-
-      if (newInput !== confirmInput) {
-        showToast('New PIN and confirmation do not match.', 'error');
-        return;
-      }
-
-      localStorage.setItem(PIN_STORAGE_KEY, newInput);
+      localStorage.setItem(KEY_PIN, newPin);
       closeChangePinModal();
-      showToast('Admin PIN updated successfully!', 'success');
+      showToast("Admin PIN changed successfully!");
     }
 
-    function openInspectionModal(sectionId, dateParam, sessionParam) {
-      const sec = SECTIONS_DIRECTORY.find(s => s.id === sectionId);
+    // Filter Controls
+    function setFilter(filterType) {
+      currentFilter = filterType;
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.className = "filter-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-blue-600 transition";
+      });
+      const activeBtn = document.getElementById(`filter-${filterType}`);
+      activeBtn.className = "filter-btn px-3 py-1.5 rounded-lg bg-blue-600 text-white shadow-sm font-semibold";
+      renderLeaderboard();
+    }
+
+    // Master Render Trigger
+    function renderAll() {
+      populateSectionDropdowns();
+      if (currentTab === 'leaderboard') renderLeaderboard();
+      if (currentTab === 'logs') renderLogs();
+      if (currentTab === 'sections') renderSectionsDirectory();
+    }
+
+    // ==================== EDIT OFFICIAL CLEANING ZONE LOGIC ====================
+    function promptEditZone(sectionId) {
+      if (!isAdminUnlocked) {
+        openAdminPinModal(() => openZoneEditModal(sectionId));
+      } else {
+        openZoneEditModal(sectionId);
+      }
+    }
+
+    function openZoneEditModal(sectionId) {
+      const sec = MASTER_SECTIONS.find(s => s.id === sectionId);
       if (!sec) return;
 
-      const targetDate = dateParam || state.selectedDate;
-      const targetSession = sessionParam || state.selectedSession;
-
-      document.getElementById('modalSectionId').value = sec.id;
-      document.getElementById('modalSectionTitle').innerText = `${sec.grade} - ${sec.name}`;
-      document.getElementById('modalSectionSub').innerText = sec.area;
-      document.getElementById('modalDate').value = targetDate;
-      document.getElementById('modalSession').value = targetSession;
-
-      const existingLog = state.logs.find(l => l.sectionId === sec.id && l.date === targetDate && l.session === targetSession);
-
-      if (existingLog) {
-        selectStarRating(existingLog.rating);
-        document.getElementById('modalRemarks').value = existingLog.remarks;
-      } else {
-        selectStarRating(5);
-        document.getElementById('modalRemarks').value = '';
-      }
-
-      document.getElementById('inspectionModal').classList.remove('hidden');
+      document.getElementById('zoneEditSectionId').value = sectionId;
+      document.getElementById('zoneEditSectionTitle').innerText = `${sec.name} (${sec.grade})`;
+      document.getElementById('zoneEditInput').value = getSectionZone(sectionId);
+      document.getElementById('zoneEditModal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('zoneEditInput').focus(), 100);
     }
 
-    function closeInspectionModal() {
-      document.getElementById('inspectionModal').classList.add('hidden');
+    function closeZoneEditModal() {
+      document.getElementById('zoneEditModal').classList.add('hidden');
     }
 
-    function selectStarRating(rating) {
-      document.getElementById('modalRating').value = rating;
-      document.getElementById('ratingScoreText').innerText = `${rating}.0 / 5.0`;
+    function saveZoneEdit() {
+      const sectionId = document.getElementById('zoneEditSectionId').value;
+      const newZone = document.getElementById('zoneEditInput').value.trim();
 
-      const badge = document.getElementById('ratingClassificationBadge');
-      if (rating >= 4) {
-        badge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200';
-        badge.innerText = `Clean (${rating}.0 Stars)`;
-      } else if (rating === 3) {
-        badge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200';
-        badge.innerText = `Fair (${rating}.0 Stars)`;
-      } else {
-        badge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200';
-        badge.innerText = `Needs Attention (${rating}.0 Stars)`;
+      if (!newZone) {
+        showToast("Zone description cannot be empty", true);
+        return;
       }
 
-      const stars = document.querySelectorAll('#starRatingSelector i');
-      stars.forEach((s, idx) => {
-        if (idx < rating) {
-          s.className = 'fa-solid fa-star text-amber-400 hover:scale-110 transition';
+      const customZones = JSON.parse(localStorage.getItem(KEY_ZONES) || '{}');
+      customZones[sectionId] = newZone;
+      localStorage.setItem(KEY_ZONES, JSON.stringify(customZones));
+
+      closeZoneEditModal();
+      showToast("Official cleaning zone updated successfully!");
+      renderAll();
+    }
+
+    // Calculate Section Scores
+    function getSectionScores() {
+      const logs = JSON.parse(localStorage.getItem(KEY_LOGS) || '[]');
+      const now = new Date();
+
+      const filteredLogs = logs.filter(log => {
+        if (currentFilter === 'overall') return true;
+        const logDate = new Date(log.date);
+        if (isNaN(logDate.getTime())) return true;
+
+        if (currentFilter === 'daily') {
+          return logDate.toDateString() === now.toDateString();
+        }
+        if (currentFilter === 'weekly') {
+          const diffDays = (now - logDate) / (1000 * 3600 * 24);
+          return diffDays <= 7;
+        }
+        if (currentFilter === 'monthly') {
+          return logDate.getMonth() === now.getMonth() && logDate.getFullYear() === now.getFullYear();
+        }
+        if (currentFilter === 'yearly') {
+          return logDate.getFullYear() === now.getFullYear();
+        }
+        return true;
+      });
+
+      return MASTER_SECTIONS.map(sec => {
+        const secLogs = filteredLogs.filter(l => l.sectionId === sec.id);
+        const count = secLogs.length;
+        const total = secLogs.reduce((acc, l) => acc + Number(l.rating), 0);
+        const avg = count > 0 ? (total / count) : 0;
+        return {
+          ...sec,
+          zone: getSectionZone(sec.id),
+          avgScore: avg,
+          inspectionCount: count,
+          logs: secLogs
+        };
+      });
+    }
+
+    // RENDER 1: LEADERBOARD & PODIUM & ATTENTION CARDS
+    function renderLeaderboard() {
+      const scores = getSectionScores();
+
+      // Sort descending by avg score
+      scores.sort((a, b) => b.avgScore - a.avgScore);
+
+      // Tie-aware Rank Assignment
+      let currentRank = 1;
+      scores.forEach((sec, idx) => {
+        if (idx > 0 && Math.abs(sec.avgScore - scores[idx - 1].avgScore) < 0.01) {
+          sec.rank = scores[idx - 1].rank;
         } else {
-          s.className = 'fa-regular fa-star text-slate-300 hover:scale-110 transition';
+          sec.rank = idx + 1;
+        }
+      });
+
+      // 1. Render Podium Top 3
+      const podiumEl = document.getElementById('podiumContainer');
+      podiumEl.innerHTML = '';
+
+      const top3 = [scores[1], scores[0], scores[2]]; // Silver, Gold, Bronze layout
+      const podiumStyles = [
+        { border: 'border-slate-300', bg: 'bg-slate-50', medal: 'fa-medal text-slate-400', label: 'Silver - 2nd Place', badge: 'bg-slate-200 text-slate-800' },
+        { border: 'border-amber-300', bg: 'bg-amber-50/60 shadow-lg scale-105', medal: 'fa-crown text-amber-500', label: 'Gold - 1st Champion', badge: 'bg-amber-400 text-amber-950 font-black' },
+        { border: 'border-amber-700/30', bg: 'bg-orange-50/50', medal: 'fa-award text-amber-700', label: 'Bronze - 3rd Place', badge: 'bg-amber-100 text-amber-800' }
+      ];
+
+      top3.forEach((sec, i) => {
+        if (!sec) return;
+        const style = podiumStyles[i];
+        podiumEl.innerHTML += `
+          <div class="glass-card p-5 rounded-2xl border-2 ${style.border} ${style.bg} flex flex-col justify-between relative overflow-hidden transition hover:shadow-md">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-[11px] font-bold px-2.5 py-1 rounded-full ${style.badge}">
+                  ${style.label}
+                </span>
+                <i class="fa-solid ${style.medal} text-2xl"></i>
+              </div>
+              <h3 class="font-extrabold text-base text-slate-900">${sec.name}</h3>
+              <p class="text-xs text-slate-500 font-medium mt-0.5"><i class="fa-solid fa-location-dot text-blue-500 mr-1"></i>${sec.zone}</p>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-200/60 flex items-center justify-between">
+              <div>
+                <span class="text-[10px] uppercase font-bold text-slate-400">Average Rating</span>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-xl font-black text-slate-900">${sec.avgScore > 0 ? sec.avgScore.toFixed(1) : 'N/A'}</span>
+                  <div class="text-amber-400 text-xs flex">
+                    ${renderStarsHTML(sec.avgScore)}
+                  </div>
+                </div>
+              </div>
+              <span class="text-xs text-slate-500 font-medium">${sec.inspectionCount} Logs</span>
+            </div>
+          </div>
+        `;
+      });
+
+      // 2. Render Embedded Priority Attention Cards (Directly Under Podium)
+      renderPriorityAttentionCards();
+
+      // 3. Render Rankings Directory Table
+      const tbody = document.getElementById('rankingsTableBody');
+      tbody.innerHTML = '';
+
+      scores.forEach(sec => {
+        let statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">Clean</span>`;
+        if (sec.avgScore > 0 && sec.avgScore <= 2.5) {
+          statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">Needs Attention</span>`;
+        } else if (sec.avgScore === 0) {
+          statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500">Unrated</span>`;
+        }
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-blue-50/40 transition">
+            <td class="py-3 px-3 font-extrabold text-slate-700">#${sec.rank}</td>
+            <td class="py-3 px-3 font-bold text-slate-900">${sec.name}</td>
+            <td class="py-3 px-3 text-slate-600 font-medium">${sec.zone}</td>
+            <td class="py-3 px-3 text-center text-slate-500 font-medium">${sec.inspectionCount}</td>
+            <td class="py-3 px-3 text-center">
+              <span class="font-extrabold text-slate-900">${sec.avgScore > 0 ? sec.avgScore.toFixed(1) : '-'}</span>
+            </td>
+            <td class="py-3 px-3 text-right">${statusBadge}</td>
+          </tr>
+        `;
+      });
+
+      // 4. Render Chart.js
+      renderChart(scores);
+    }
+
+    // Render Priority Attention Cards with Clickable Star Box
+    function renderPriorityAttentionCards() {
+      const grid = document.getElementById('priorityAttentionGrid');
+      const badge = document.getElementById('attentionCounterBadge');
+      const logs = JSON.parse(localStorage.getItem(KEY_LOGS) || '[]');
+
+      // Flag logs with score <= 2.5
+      const flaggedLogs = logs.filter(l => Number(l.rating) <= 2.5);
+      badge.innerText = `${flaggedLogs.length} Flagged`;
+
+      if (flaggedLogs.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full py-6 text-center text-slate-400 bg-white/60 rounded-xl border border-dashed border-amber-200">
+            <i class="fa-solid fa-circle-check text-2xl text-emerald-500 mb-1"></i>
+            <p class="text-xs font-semibold text-slate-700">All Sections Meeting Sanitation Standards!</p>
+            <p class="text-[11px] text-slate-400">No active inspection scores &le; 2.5 stars recorded.</p>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = '';
+      flaggedLogs.forEach(log => {
+        const sec = MASTER_SECTIONS.find(s => s.id === log.sectionId) || { name: log.sectionId };
+        const zone = getSectionZone(log.sectionId);
+        const sessionBadge = log.session === 'AM' 
+          ? `<span class="bg-amber-100 text-amber-900 px-2 py-0.5 rounded text-[10px] font-extrabold border border-amber-300">AM Inspection</span>`
+          : `<span class="bg-indigo-100 text-indigo-900 px-2 py-0.5 rounded text-[10px] font-extrabold border border-indigo-300">PM Inspection</span>`;
+
+        grid.innerHTML += `
+          <div class="bg-white p-4 rounded-xl shadow-sm border border-amber-200 flex flex-col justify-between space-y-3 relative">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                ${sessionBadge}
+                <span class="text-[11px] font-semibold text-slate-400"><i class="fa-regular fa-calendar mr-1"></i>${log.date}</span>
+              </div>
+              <h4 class="font-bold text-sm text-slate-900">${sec.name}</h4>
+              <p class="text-xs text-slate-500 font-medium mt-0.5"><i class="fa-solid fa-location-dot text-amber-600 mr-1"></i>${zone}</p>
+            </div>
+
+            <div class="p-2.5 bg-amber-50/70 rounded-lg border border-amber-100">
+              <p class="text-[11px] text-slate-700 font-medium italic">"${log.remarks || 'No specific notes recorded.'}"</p>
+            </div>
+
+            <!-- Clickable Interactive Star Rating Box -->
+            <button onclick="promptEditRatingFromCard('${log.id}')" title="Click to edit rating" class="w-full flex items-center justify-between p-2.5 bg-slate-50 hover:bg-amber-100/60 rounded-xl border border-slate-200 hover:border-amber-300 transition text-left group">
+              <div>
+                <span class="text-[10px] font-bold uppercase text-slate-400 block">Inspection Score</span>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-sm font-black text-amber-600">${Number(log.rating).toFixed(1)}</span>
+                  <div class="text-amber-400 text-xs flex">
+                    ${renderStarsHTML(log.rating)}
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center gap-1 text-xs font-bold text-blue-600 group-hover:text-amber-700">
+                <i class="fa-solid fa-pen-to-square"></i>
+                <span class="text-[11px]">Edit Score</span>
+              </div>
+            </button>
+          </div>
+        `;
+      });
+    }
+
+    // Direct Click-to-Edit Rating Action
+    function promptEditRatingFromCard(logId) {
+      if (!isAdminUnlocked) {
+        openAdminPinModal(() => openRatingEditModal(logId));
+      } else {
+        openRatingEditModal(logId);
+      }
+    }
+
+    function openRatingEditModal(logId) {
+      const logs = JSON.parse(localStorage.getItem(KEY_LOGS) || '[]');
+      const log = logs.find(l => l.id === logId);
+      if (!log) return;
+
+      document.getElementById('modalLogId').value = log.id;
+      document.getElementById('modalSectionSelect').value = log.sectionId;
+      document.getElementById('modalSessionSelect').value = log.session;
+      document.getElementById('modalDateInput').value = log.date;
+      document.getElementById('modalRemarksInput').value = log.remarks || '';
+      
+      setModalStars(Math.round(log.rating));
+
+      document.getElementById('ratingModalTitle').innerText = "Edit Flagged Rating";
+      document.getElementById('ratingModalSub').innerText = "Update inspection score and remarks";
+      document.getElementById('ratingModal').classList.remove('hidden');
+    }
+
+    // Helper: Render Star Icons
+    function renderStarsHTML(score) {
+      let html = '';
+      const fullStars = Math.floor(score);
+      const hasHalf = score % 1 >= 0.5;
+
+      for (let i = 1; i <= 5; i++) {
+        if (i <= fullStars) {
+          html += `<i class="fa-solid fa-star"></i>`;
+        } else if (i === fullStars + 1 && hasHalf) {
+          html += `<i class="fa-solid fa-star-half-stroke"></i>`;
+        } else {
+          html += `<i class="fa-regular fa-star text-slate-300"></i>`;
+        }
+      }
+      return html;
+    }
+
+    // RENDER 2: Chart.js Benchmark Visualization
+    function renderChart(scores) {
+      const ctx = document.getElementById('leaderboardChart');
+      const fallback = document.getElementById('chartFallback');
+
+      if (typeof Chart === 'undefined') {
+        ctx.style.display = 'none';
+        fallback.classList.remove('hidden');
+        fallback.innerHTML = scores.map(s => `
+          <div class="flex items-center text-[10px] font-semibold space-x-2">
+            <span class="w-24 truncate">${s.name}</span>
+            <div class="flex-grow bg-slate-100 rounded-full h-3 overflow-hidden">
+              <div class="bg-blue-600 h-full rounded-full" style="width: ${(s.avgScore / 5) * 100}%"></div>
+            </div>
+            <span class="w-6 text-right">${s.avgScore.toFixed(1)}</span>
+          </div>
+        `).join('');
+        return;
+      }
+
+      ctx.style.display = 'block';
+      fallback.classList.add('hidden');
+
+      if (chartInstance) chartInstance.destroy();
+
+      const labels = scores.map(s => s.name.replace('Grade ', 'G'));
+      const dataValues = scores.map(s => s.avgScore);
+
+      try {
+        chartInstance = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Avg Score (1-5)',
+              data: dataValues,
+              backgroundColor: dataValues.map(v => v <= 2.5 ? '#f59e0b' : '#2563eb'),
+              borderRadius: 6
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { min: 0, max: 5, ticks: { stepSize: 1 } },
+              y: { ticks: { font: { size: 9 } } }
+            }
+          }
+        });
+      } catch(e) {
+        console.warn("Chart generation fallback active", e);
+      }
+    }
+
+    // RENDER 3: AM/PM LOGS TABLE
+    function renderLogs() {
+      const dateVal = document.getElementById('logDateFilter').value;
+      const sessionVal = document.getElementById('logSessionFilter').value;
+      const sectionVal = document.getElementById('logSectionFilter').value;
+
+      const logs = JSON.parse(localStorage.getItem(KEY_LOGS) || '[]');
+
+      const filtered = logs.filter(l => {
+        if (dateVal && l.date !== dateVal) return false;
+        if (sessionVal !== 'ALL' && l.session !== sessionVal) return false;
+        if (sectionVal !== 'ALL' && l.sectionId !== sectionVal) return false;
+        return true;
+      });
+
+      const tbody = document.getElementById('logsTableBody');
+      tbody.innerHTML = '';
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="py-8 text-center text-slate-400">
+              <i class="fa-solid fa-folder-open text-2xl mb-1"></i>
+              <p>No inspection logs found for the selected filters.</p>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      filtered.forEach(log => {
+        const sec = MASTER_SECTIONS.find(s => s.id === log.sectionId) || { name: log.sectionId };
+        const zone = getSectionZone(log.sectionId);
+        const sessionTag = log.session === 'AM'
+          ? `<span class="bg-amber-100 text-amber-900 font-extrabold px-2 py-0.5 rounded text-[10px]">AM</span>`
+          : `<span class="bg-indigo-100 text-indigo-900 font-extrabold px-2 py-0.5 rounded text-[10px]">PM</span>`;
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-blue-50/30 transition">
+            <td class="py-3 px-3 font-semibold text-slate-700">${log.date}</td>
+            <td class="py-3 px-3">${sessionTag}</td>
+            <td class="py-3 px-3 font-bold text-slate-900">${sec.name}</td>
+            <td class="py-3 px-3 text-slate-600 font-medium">${zone}</td>
+            <td class="py-3 px-3 text-center">
+              <span class="font-black text-slate-900 mr-1">${Number(log.rating).toFixed(1)}</span>
+              <span class="text-amber-400 text-xs">${renderStarsHTML(log.rating)}</span>
+            </td>
+            <td class="py-3 px-3 text-slate-600 max-w-xs truncate">${log.remarks || '-'}</td>
+            <td class="py-3 px-3 text-right">
+              <button onclick="promptEditRatingFromCard('${log.id}')" class="text-xs font-semibold text-blue-600 hover:text-blue-800">
+                <i class="fa-solid fa-pen-to-square"></i> Edit
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    // RENDER 4: SECTIONS MASTER DIRECTORY WITH EDIT OFFICIAL ZONE BUTTON
+    function renderSectionsDirectory() {
+      const grid = document.getElementById('sectionsMasterGrid');
+      grid.innerHTML = '';
+
+      MASTER_SECTIONS.forEach(sec => {
+        const zone = getSectionZone(sec.id);
+        grid.innerHTML += `
+          <div class="glass-card p-5 rounded-2xl border border-blue-100 flex flex-col justify-between hover:shadow-md transition">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 uppercase">
+                  ${sec.grade}
+                </span>
+                <button onclick="promptEditZone('${sec.id}')" class="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-lg border border-blue-200 transition">
+                  <i class="fa-solid fa-pen-to-square"></i> Edit Zone
+                </button>
+              </div>
+              <h3 class="font-extrabold text-base text-slate-900">${sec.name}</h3>
+              
+              <div class="mt-3 p-3 bg-blue-50/50 rounded-xl border border-blue-100">
+                <span class="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Official Assigned Cleaning Area</span>
+                <p class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <i class="fa-solid fa-location-dot text-blue-600"></i>
+                  ${zone}
+                </p>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+              <span class="text-slate-400 font-medium">Bonbonon High School</span>
+              <button onclick="openNewLogModal('${sec.id}')" class="font-bold text-blue-600 hover:underline">
+                + Log Inspection
+              </button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    // Modal Inspection Log Logic
+    function openNewLogModal(preselectedSection = null) {
+      if (!isAdminUnlocked) {
+        openAdminPinModal(() => openNewLogModal(preselectedSection));
+        return;
+      }
+
+      document.getElementById('modalLogId').value = '';
+      if (preselectedSection) {
+        document.getElementById('modalSectionSelect').value = preselectedSection;
+      }
+      document.getElementById('modalRemarksInput').value = '';
+      setModalStars(3);
+
+      document.getElementById('ratingModalTitle').innerText = "Log Section Inspection";
+      document.getElementById('ratingModalSub').innerText = "Rate section sanitation score";
+      document.getElementById('ratingModal').classList.remove('hidden');
+    }
+
+    function closeRatingModal() {
+      document.getElementById('ratingModal').classList.add('hidden');
+    }
+
+    function setModalStars(val) {
+      selectedModalStars = val;
+      const labels = [
+        "1.0 Star - Poor / Immediate Attention Needed",
+        "2.0 Stars - Below Standard",
+        "3.0 Stars - Satisfactory Cleanliness",
+        "4.0 Stars - Very Clean",
+        "5.0 Stars - Outstanding Sanitation"
+      ];
+
+      document.getElementById('starRatingLabel').innerText = labels[val - 1];
+
+      document.querySelectorAll('.star-btn').forEach(btn => {
+        const btnVal = Number(btn.getAttribute('data-val'));
+        if (btnVal <= val) {
+          btn.className = "star-btn text-2xl text-amber-400 transition transform scale-110";
+        } else {
+          btn.className = "star-btn text-2xl text-slate-300 transition";
         }
       });
     }
 
-    function saveInspectionLog(e) {
+    function handleRatingSubmit(e) {
       e.preventDefault();
 
-      const sectionId = document.getElementById('modalSectionId').value;
-      const date = document.getElementById('modalDate').value;
-      const session = document.getElementById('modalSession').value;
-      const rating = parseFloat(document.getElementById('modalRating').value);
-      const remarks = document.getElementById('modalRemarks').value.trim() || 'No specific remarks.';
+      const logId = document.getElementById('modalLogId').value;
+      const sectionId = document.getElementById('modalSectionSelect').value;
+      const session = document.getElementById('modalSessionSelect').value;
+      const date = document.getElementById('modalDateInput').value;
+      const remarks = document.getElementById('modalRemarksInput').value.trim();
 
-      const existingIndex = state.logs.findIndex(l => l.sectionId === sectionId && l.date === date && l.session === session);
+      const logs = JSON.parse(localStorage.getItem(KEY_LOGS) || '[]');
 
-      const logData = {
-        id: `log-${sectionId}-${date}-${session}`,
-        sectionId: sectionId,
-        date: date,
-        session: session,
-        rating: rating,
-        remarks: remarks,
-        updatedAt: new Date().toISOString()
-      };
-
-      if (existingIndex >= 0) {
-        state.logs[existingIndex] = logData;
-      } else {
-        state.logs.push(logData);
-      }
-
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state.logs));
-
-      closeInspectionModal();
-      showToast('Inspection log saved successfully!', 'success');
-
-      if (state.activeTab === 'logs') renderDailyLogs();
-      if (state.activeTab === 'analytics') renderAnalyticsTab();
-      if (state.activeTab === 'attention') renderAttentionTab();
-      updateNeedsAttentionBadge();
-    }
-
-    function renderStarIcons(rating) {
-      let starsHtml = '';
-      const rounded = Math.round(rating);
-      for (let i = 1; i <= 5; i++) {
-        if (i <= rounded) {
-          starsHtml += '<i class="fa-solid fa-star text-amber-400"></i>';
-        } else {
-          starsHtml += '<i class="fa-regular fa-star text-slate-300"></i>';
+      if (logId) {
+        const index = logs.findIndex(l => l.id === logId);
+        if (index !== -1) {
+          logs[index] = { ...logs[index], sectionId, session, date, rating: selectedModalStars, remarks };
         }
-      }
-      return starsHtml;
-    }
-
-    function showToast(message, type = 'success') {
-      const toast = document.getElementById('toastNotification');
-      const toastMessage = document.getElementById('toastMessage');
-      const toastIcon = document.getElementById('toastIcon');
-
-      toastMessage.innerText = message;
-
-      if (type === 'success') {
-        toastIcon.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-400"></i>';
-      } else if (type === 'error') {
-        toastIcon.innerHTML = '<i class="fa-solid fa-circle-xmark text-rose-400"></i>';
       } else {
-        toastIcon.innerHTML = '<i class="fa-solid fa-circle-info text-blue-400"></i>';
+        const newLog = {
+          id: 'log-' + Date.now(),
+          sectionId,
+          session,
+          date,
+          rating: selectedModalStars,
+          remarks,
+          timestamp: Date.now()
+        };
+        logs.unshift(newLog);
       }
 
-      toast.classList.remove('translate-y-20', 'opacity-0');
-      toast.classList.add('translate-y-0', 'opacity-100');
-
-      setTimeout(() => {
-        toast.classList.remove('translate-y-0', 'opacity-100');
-        toast.classList.add('translate-y-20', 'opacity-0');
-      }, 3200);
+      localStorage.setItem(KEY_LOGS, JSON.stringify(logs));
+      closeRatingModal();
+      showToast("Inspection log saved successfully!");
+      renderAll();
     }
-
-    window.onload = function() {
-      const today = new Date();
-      const optionsDay = { weekday: 'long' };
-      const optionsDate = { year: 'numeric', month: 'long', day: 'numeric' };
-      const dayStr = today.toLocaleDateString('en-US', optionsDay);
-      const dateStr = today.toLocaleDateString('en-US', optionsDate);
-      
-      document.getElementById('liveDateWidget').innerText = `Today: ${dayStr}, ${dateStr}`;
-      document.getElementById('logDatePicker').value = state.selectedDate;
-
-      seedSampleDataIfEmpty();
-      switchTab('analytics');
-      renderDirectoryGrid();
-    };
   </script>
 </body>
 </html>
